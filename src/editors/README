@@ -1,16 +1,54 @@
-/*But : Contient tous les composants React permettant à l’utilisateur ou au créateur d’exercices de modifier le contenu.
+# 📝 Éditeurs d'éléments
 
-Exemple de composants :
-FunctionEditor.jsx	-> Permet de créer ou modifier une fonction mathématique.
-EquationEditor.jsx	-> Permet de saisir ou modifier une équation.
-TextEditor.jsx	-> Permet de saisir ou modifier du texte enrichi.
-GraphEditor.jsx	-> Permet de configurer un graphique (bornes, expression, options).*/
+## But
 
+Contient tous les composants React permettant à l'utilisateur de créer et modifier le contenu des exercices.
 
+Chaque éditeur permet de configurer un type d'élément spécifique avec **support complet de LaTeX**.
 
+## 📐 Support LaTeX
 
-/*
-Résoudre calculs en Latex, 
-Boutons indication pour l'élève, 
+**Tous les éditeurs supportent la syntaxe LaTeX !**
 
-*/
+- Utilisez `{variable}` pour les valeurs dynamiques
+- Utilisez `$...$` pour les formules LaTeX inline
+- Combinez les deux : `$f({a}) = {a}x^2 + {b}x + {c}$`
+
+📖 Consultez **[GUIDE_LATEX.md](../../GUIDE_LATEX.md)** pour la documentation complète.
+
+## 🔧 Éditeurs disponibles
+
+### Texte et expressions
+
+- **TextEditor.jsx** - Texte enrichi avec LaTeX et variables
+- **FunctionEditor.jsx** - Fonctions mathématiques (expressions LaTeX)
+- **EquationEditor.jsx** - Équations simples et systèmes (LaTeX)
+
+### Questions
+
+- **QuestionEditor.jsx** - Questions avec réponse attendue
+- **MCQEditor.jsx** - Questions à choix multiples
+
+### Graphiques et visualisations
+
+- **GraphEditor.jsx** - Graphiques de fonctions
+- **VectorEditor.jsx** - Vecteurs 2D et 3D
+- **ComplexPlaneEditor.jsx** - Plan complexe
+- **DiscreteGraphEditor.jsx** - Graphes discrets
+
+### Tableaux
+
+- **SignTableEditor.jsx** - Tableaux de signes
+- **VariationTableEditor.jsx** - Tableaux de variations
+- **StatsTableEditor.jsx** - Tableaux statistiques
+
+### Suites et probabilités
+
+- **SequenceEditor.jsx** - Suites numériques (explicites, récurrentes, arithmétiques, géométriques)
+- **ProbaTreeEditor.jsx** - Arbres de probabilités
+
+## 💡 Notes importantes
+
+- Les placeholders montrent des exemples de syntaxe LaTeX
+- Les variables entre `{}` sont automatiquement remplacées par leurs valeurs
+- Les formules LaTeX sont rendues via KaTeX dans les renderers correspondants

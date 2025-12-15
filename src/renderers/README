@@ -1,7 +1,69 @@
-But : Contient tous les composants React qui affichent des contenus, graphiques ou textes, dans un exercice.
+# 🎨 Renderers d'éléments
 
-Exemple de composants :
-GraphRenderer.jsx	-> Affiche un graphique basé sur une expression mathématique, avec axes, grille et courbe.
-FunctionRenderer.jsx	-> Affiche une fonction ou un calcul avec ses résultats.
-EquationRenderer.jsx	-> Affiche une équation ou une formule mathématique stylisée.
-TextRenderer.jsx	-> Affiche du texte enrichi (consignes, explications, résultats).
+## But
+
+Contient tous les composants React qui affichent le contenu des exercices avec rendu LaTeX professionnel.
+
+Chaque renderer correspond à un éditeur et utilise **KaTeX** pour le rendu mathématique.
+
+## 📐 Rendu LaTeX
+
+**Tous les renderers utilisent le composant `MathText` de `/utils/mathRenderer.jsx`**
+
+Le système gère automatiquement :
+
+- ✅ Remplacement des variables `{a}`, `{b}`, `{c}...` par leurs valeurs
+- ✅ Rendu LaTeX via `react-katex` (inline avec `$...$` ou block avec `$$...$$`)
+- ✅ Nettoyage intelligent des expressions (gestion des signes +/-, parenthèses)
+- ✅ Support Unicode pour les symboles mathématiques
+
+## 🎯 Renderers disponibles
+
+### Texte et expressions
+
+- **TextRenderer.jsx** - Affiche du texte avec LaTeX et variables remplacées
+- **FunctionRenderer.jsx** - Affiche une fonction mathématique formatée
+- **EquationRenderer.jsx** - Affiche une équation ou un système avec LaTeX
+
+### Questions
+
+- **QuestionRenderer.jsx** - Affiche une question avec indice optionnel
+- **MCQRenderer.jsx** - Affiche un QCM avec validation et correction
+
+### Graphiques et visualisations
+
+- **GraphRenderer.jsx** - Graphique de fonction avec axes, grille et courbe (SVG)
+- **VectorRenderer.jsx** - Vecteurs 2D/3D avec projection isométrique
+- **ComplexPlaneRenderer.jsx** - Plan complexe avec points et opérations
+- **DiscreteGraphRenderer.jsx** - Graphes discrets (sommets et arêtes)
+
+### Tableaux
+
+- **SignTableRenderer.jsx** - Tableau de signes formaté
+- **VariationTableRenderer.jsx** - Tableau de variations avec flèches
+- **StatsTableRenderer.jsx** - Tableau statistique avec calculs
+
+### Suites et probabilités
+
+- **SequenceRenderer.jsx** - Suite numérique avec termes calculés
+- **ProbaTreeRenderer.jsx** - Arbre de probabilités interactif
+
+## 🔧 Utilisation du composant MathText
+
+```jsx
+import { MathText } from "../utils/mathRenderer";
+
+<MathText
+  content="Calculer $f({a}) = {a}x^2 + {b}x + {c}$"
+  variables={{ a: 2, b: -3, c: 1 }}
+  className="text-gray-800"
+  requireBraces={true} // true = nécessite {}, false = remplace aussi sans {}
+/>;
+```
+
+## 💡 Notes importantes
+
+- Les renderers reçoivent `content` et `generatedValues` en props
+- `generatedValues` contient les valeurs aléatoires des variables
+- Le rendu LaTeX est automatique via le système `MathText`
+- Les graphiques utilisent SVG pour une qualité optimale
