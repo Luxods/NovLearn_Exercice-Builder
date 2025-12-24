@@ -39,6 +39,7 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                   <option value="integer">Entier</option>
                   <option value="decimal">Décimal</option>
                   <option value="choice">Choix</option>
+                  <option value="computed">Fonction des autres</option> {/* Nouvelle option */}
                 </select>
                 <button
                   onClick={() => deleteVariable(variable.id)}
@@ -48,7 +49,24 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                 </button>
               </div>
 
-              {variable.type === 'integer' || variable.type === 'decimal' ? (
+              {/* Affichage conditionnel selon le type */}
+              {variable.type === 'computed' ? (
+                <div className="mt-2 w-full">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 font-mono text-sm font-bold">=</span>
+                    <input
+                      type="text"
+                      className="flex-1 p-1 border rounded font-mono text-sm bg-white border-purple-300"
+                      placeholder="Ex: 2*a + b^2"
+                      value={variable.expression || ''}
+                      onChange={(e) => updateVariable(variable.id, { expression: e.target.value })}
+                    />
+                  </div>
+                  <p className="text-[11px] text-gray-500 mt-1 ml-4">
+                    Utilisez les noms des autres variables (ex: a, b). Opérateurs: +, -, *, /, ^, sqrt()...
+                  </p>
+                </div>
+              ) : variable.type === 'integer' || variable.type === 'decimal' ? (
                 <div className="flex gap-2">
                   <p>Min :</p>
                   <input
@@ -91,7 +109,7 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                   type="text"
                   className="w-full p-1 border rounded"
                   placeholder="Valeurs séparées par des virgules: sin,cos,tan"
-                  value={variable.choices.join(',')}
+                  value={variable.choices ? variable.choices.join(',') : ''}
                   onChange={(e) => updateVariable(variable.id, { 
                     choices: e.target.value.split(',').map(s => s.trim()) 
                   })}
@@ -99,8 +117,8 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
               )}
               
               {generatedValues[variable.name] !== undefined && (
-                <div className="mt-2 text-sm text-purple-700 font-medium">
-                  Valeur actuelle: {generatedValues[variable.name]}
+                <div className="mt-2 text-sm text-purple-700 font-medium border-t border-purple-100 pt-1">
+                  Valeur actuelle: <strong>{generatedValues[variable.name]}</strong>
                 </div>
               )}
             </div>

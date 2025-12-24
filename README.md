@@ -124,18 +124,6 @@ Le projet est configuré pour Vercel avec :
 - Build Command : `npm run build`
 - Output Directory : `dist`
 
-## 📚 Structure du projet
-
-```
-src/
-├── components/      # Composants UI généraux
-├── editors/         # Éditeurs pour chaque type d'élément
-├── renderers/       # Renderers pour afficher les éléments
-├── utils/          # Utilitaires (mathRenderer, evaluateExpression...)
-├── hooks/          # Hooks React personnalisés
-├── constants/      # Configuration et constantes
-└── styles/         # Styles CSS
-```
 
 ## 🛠️ Technologies
 
@@ -148,3 +136,80 @@ src/
 ## 📝 License
 
 ISC
+
+```
+Novlearn_Exercice-Builder
+├─ GUIDE_LATEX.md
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  └─ logo.jpg
+├─ README
+├─ README.md
+├─ src
+│  ├─ App.jsx
+│  ├─ components
+│  │  ├─ ElementList.jsx
+│  │  ├─ ExerciseInfo.jsx
+│  │  ├─ ExercisePreview.jsx
+│  │  ├─ ExportModal.jsx
+│  │  ├─ Header.jsx
+│  │  ├─ Sidebar.jsx
+│  │  └─ VariableManager.jsx
+│  ├─ constants
+│  │  └─ index.js
+│  ├─ editors
+│  │  ├─ ComplexPlaneEditor.jsx
+│  │  ├─ DiscreteGraphEditor.jsx
+│  │  ├─ ElementEditor.jsx
+│  │  ├─ EquationEditor.jsx
+│  │  ├─ FunctionEditor.jsx
+│  │  ├─ GraphEditor.jsx
+│  │  ├─ MCQEditor.jsx
+│  │  ├─ ProbaTreeEditor.jsx
+│  │  ├─ QuestionEditor.jsx
+│  │  ├─ README
+│  │  ├─ SequenceEditor.jsx
+│  │  ├─ SignTableEditor.jsx
+│  │  ├─ StatsTableEditor.jsx
+│  │  ├─ TextEditor.jsx
+│  │  ├─ VariationTableEditor.jsx
+│  │  └─ VectorEditor.jsx
+│  ├─ hooks
+│  │  ├─ useCorrection.js
+│  │  ├─ useExercises.js
+│  │  └─ useVariables.js
+│  ├─ main.jsx
+│  ├─ renderers
+│  │  ├─ ComplexPlaneRenderer.jsx
+│  │  ├─ DiscreteGraphRenderer.jsx
+│  │  ├─ ElementRenderer.jsx
+│  │  ├─ EquationRenderer.jsx
+│  │  ├─ FunctionRenderer.jsx
+│  │  ├─ GraphRenderer.jsx
+│  │  ├─ MCQRenderer.jsx
+│  │  ├─ ProbaTreeRenderer.jsx
+│  │  ├─ QuestionRenderer.jsx
+│  │  ├─ README
+│  │  ├─ SequenceRenderer.jsx
+│  │  ├─ SignTableRenderer.jsx
+│  │  ├─ StatsTableRenderer.jsx
+│  │  ├─ TextRenderer.jsx
+│  │  ├─ VariationTableRenderer.jsx
+│  │  └─ VectorRenderer.jsx
+│  ├─ styles
+│  │  ├─ base.css
+│  │  ├─ components.css
+│  │  ├─ index.css
+│  │  └─ utilities.css
+│  └─ utils
+│     ├─ defaultContent.js
+│     ├─ evaluateExpression.js
+│     ├─ exportUtils.js
+│     ├─ generateRandomValues.js
+│     ├─ mathRenderer.jsx
+│     └─ README.md
+└─ vite.config.js
+
+```

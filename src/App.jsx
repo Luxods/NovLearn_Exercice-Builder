@@ -9,8 +9,6 @@ import Sidebar from './components/Sidebar';
 import { useExercises } from './hooks/useExercises';
 import { useVariables } from './hooks/useVariables';
 
-
-
 const App = () => {
   const [previewMode, setPreviewMode] = useState(false);
   
@@ -36,11 +34,13 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* CORRECTION ICI : Ajout de la prop currentExercise pour la publication */}
         <Header
           previewMode={previewMode}
           setPreviewMode={setPreviewMode}
           hasVariables={currentExercise.variables.length > 0}
           onRegenerate={regenerateValues}
+          currentExercise={currentExercise}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
