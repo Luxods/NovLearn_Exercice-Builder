@@ -10,14 +10,25 @@ export const publishExerciseToDB = async (exercise) => {
     return { success: false, error: "Titre et Chapitre requis." };
   }
 
-  // 2. Préparation de l'objet pour la BDD
-  // On extrait les métadonnées pour les colonnes SQL, et on garde tout le reste dans 'content'
+  // 2. On SÉPARE les métadonnées du contenu pur
+  // On extrait (remove) title, chapter, difficulty, competences de l'objet 'content'
+  // Tout le reste (variables, elements...) va dans la variable 'contentOnly'
+  const { 
+    id, // On retire l'ID s'il y en a un (c'est la BDD qui gère l'ID)
+    title, 
+    chapter, 
+    difficulty, 
+    competences, 
+    ...contentOnly // <-- C'est ici que sont variables et elements
+  } = exercise;
+
+  // 3. Préparation de la ligne SQL
   const dbRow = {
-    title: exercise.title,
-    chapter: exercise.chapter,
-    difficulty: exercise.difficulty || 'Moyen', // Valeur par défaut
-    competences: exercise.competences || [],
-    content: exercise // On stocke TOUT l'objet JSON dans la colonne jsonb
+    title: title,
+    chapter: chapter,
+    difficulty: difficulty || 'Moyen',
+    competences: competences || [],
+    content: contentOnly // Le JSONB ne contient plus de titre !
   };
 
   try {
