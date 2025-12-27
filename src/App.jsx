@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save } from 'lucide-react';
+// On a retiré 'Save' des imports car on ne l'utilise plus ici
 import Header from './components/Header';
 import ExerciseInfo from './components/ExerciseInfo';
 import VariableManager from './components/VariableManager';
@@ -19,8 +19,8 @@ const App = () => {
     addElement,
     updateElement,
     deleteElement,
-    saveExercise,
-    exportJSON
+    // saveExercise, // Plus besoin de cette fonction ici
+    // exportJSON,   // Plus besoin de l'exporter vers la Sidebar
   } = useExercises();
 
   const {
@@ -34,7 +34,6 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* CORRECTION ICI : Ajout de la prop currentExercise pour la publication */}
         <Header
           previewMode={previewMode}
           setPreviewMode={setPreviewMode}
@@ -68,13 +67,8 @@ const App = () => {
                   addElement={addElement}
                 />
                 
-                <button
-                  onClick={saveExercise}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition font-medium text-lg"
-                >
-                  <Save size={20} />
-                  Sauvegarder l'exercice
-                </button>
+                {/* L'ancien bouton "Sauvegarder" a été supprimé ici */}
+                
               </div>
             ) : (
               <ExercisePreview
@@ -84,7 +78,8 @@ const App = () => {
             )}
           </div>
           
-          <Sidebar exercises={exercises} exportJSON={exportJSON} />
+          {/* On ne passe plus exportJSON à la Sidebar */}
+          <Sidebar exercises={exercises} />
         </div>
       </div>
     </div>
