@@ -76,10 +76,10 @@ export const defaultContent = {
   },
 
   question: {
-    question: "Calculer @a + @b",
-    answerType: "number",
-    answer: "@a + @b",
-    points: 1,
+    question: "Résoudre l'équation :",
+    answerFormat: "equation", // 'number', 'expression', 'equation', 'interval', 'text'
+    correctAnswer: "@x1; @x2", 
+    points: 1
   },
 };
 

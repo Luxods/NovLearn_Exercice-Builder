@@ -1,72 +1,132 @@
 import React from 'react';
+import { Hash, Type } from 'lucide-react';
 
 const QuestionEditor = ({ content, onUpdate }) => {
-  const safeContent = content || {
-    question: '',
-    answerType: 'number', // 'number', 'expression'
-    answer: '',
-    points: 1
+  const safeContent = {
+    question: "Question...",
+    answerFormat: "number",
+    correctAnswer: "",
+    points: 1,
+    ...content
   };
 
-  const updateContent = (field, value) => {
+  const update = (field, value) => {
     onUpdate({ ...safeContent, [field]: value });
+  };
+
+  const insertSymbol = (symbol) => {
+    const current = safeContent.correctAnswer || "";
+    update('correctAnswer', current + symbol);
   };
 
   return (
     <div className="space-y-4">
-      {/* Énoncé de la question */}
+      
+      {/* 1. ÉNONCÉ */}
       <div>
-        <label className="block text-sm font-medium mb-1">Question</label>
-        <textarea
-          className="w-full p-2 border rounded font-mono text-sm"
-          rows={2}
-          value={safeContent.question || ''}
-          onChange={(e) => updateContent('question', e.target.value)}
-          placeholder="Calculer l'image de @a..."
+        <label className="block text-sm font-bold text-gray-700 mb-1">Énoncé de la question</label>
+        <textarea 
+          className="w-full p-2 border rounded font-sans text-sm min-h-[60px]"
+          value={safeContent.question}
+          onChange={(e) => update('question', e.target.value)}
+          placeholder="Ex: Résoudre dans R l'équation f(x) = 0"
         />
       </div>
 
-      {/* Paramètres de réponse */}
-      <div className="grid grid-cols-2 gap-4 bg-blue-50 p-3 rounded">
+      {/* 2. TYPE DE RÉPONSE */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-blue-800 mb-1">Type de réponse</label>
-          <select
-            className="w-full p-1 border rounded text-sm"
-            value={safeContent.answerType}
-            onChange={(e) => updateContent('answerType', e.target.value)}
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Format attendu</label>
+          <select 
+            className="w-full p-2 border rounded bg-white text-sm"
+            value={safeContent.answerFormat}
+            onChange={(e) => update('answerFormat', e.target.value)}
           >
-            <option value="number">Nombre exact</option>
-            <option value="expression">Expression mathématique</option>
+            <option value="number">Nombre (Ex: 4.5)</option>
+            <option value="equation">Ensemble (Ex: -1; 3)</option>
+            <option value="interval">Intervalle (Ex: ]-inf; 5])</option>
+            <option value="expression">Formule (Ex: 2x+1)</option>
+            <option value="text">Texte libre</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-blue-800 mb-1">Points</label>
-          <input
-            type="number"
-            className="w-full p-1 border rounded text-sm"
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Points</label>
+          <input 
+            type="number" 
+            className="w-full p-2 border rounded text-sm"
             value={safeContent.points}
-            onChange={(e) => updateContent('points', parseInt(e.target.value) || 1)}
+            onChange={(e) => update('points', parseFloat(e.target.value))}
+            min="0.5" step="0.5"
           />
         </div>
-        
-        <div className="col-span-2">
-          <label className="block text-xs font-medium text-blue-800 mb-1">
-            Réponse attendue (calculée)
-          </label>
-          <input
+      </div>
+
+      {/* 3. SOLUTION SIMPLIFIÉE */}
+      <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+        <label className="block text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
+          Solution attendue
+        </label>
+
+        {/* BARRE D'OUTILS SIMPLIFIÉE */}
+        <div className="mb-2 flex flex-wrap gap-2">
+            
+            {safeContent.answerFormat === 'equation' && (
+              <>
+                <ToolBtn icon={<Hash size={14}/>} label="Vide" val="vide" onClick={insertSymbol} />
+                <ToolBtn label=";" val="; " onClick={insertSymbol} />
+              </>
+            )}
+
+            {safeContent.answerFormat === 'interval' && (
+              <>
+                <ToolBtn icon={<Hash size={14}/>} label="Vide" val="vide" onClick={insertSymbol} />
+                <ToolBtn label="∞" val="inf" onClick={insertSymbol} />
+                <ToolBtn label="Union" val=" U " onClick={insertSymbol} />
+                <ToolBtn label="[ ]" val="[ ; ]" onClick={insertSymbol} />
+                <ToolBtn label="] [" val="] ; [" onClick={insertSymbol} />
+              </>
+            )}
+
+            {safeContent.answerFormat === 'expression' && (
+              <>
+                <ToolBtn label="x²" val="x^2" onClick={insertSymbol} />
+                <ToolBtn label="/" val="/" onClick={insertSymbol} />
+              </>
+            )}
+        </div>
+
+        {/* CHAMP INPUT AVEC PRÉFIXE VISUEL */}
+        <div className="flex items-center gap-2">
+          {safeContent.answerFormat === 'equation' && <span className="font-bold text-blue-800 text-lg">S = {'{'}</span>}
+          {safeContent.answerFormat === 'interval' && <span className="font-bold text-blue-800 text-lg">x ∈</span>}
+          
+          <input 
             type="text"
-            className="w-full p-2 border rounded font-mono text-sm"
-            value={safeContent.answer || ''}
-            onChange={(e) => updateContent('answer', e.target.value)}
-            placeholder={safeContent.answerType === 'number' ? "Ex: @a * @b" : "Ex: 2x + @a"}
+            className="flex-1 p-2 border border-blue-300 rounded font-mono text-sm outline-none focus:border-blue-500"
+            value={safeContent.correctAnswer || ""}
+            onChange={(e) => update('correctAnswer', e.target.value)}
+            placeholder={
+              safeContent.answerFormat === 'equation' ? "@x1; @x2" :
+              safeContent.answerFormat === 'interval' ? "]-inf; 2]" :
+              "Valeur..."
+            }
           />
-          <p className="text-[10px] text-blue-600 mt-1">
-            Utilisez les variables <code>@a</code>. Pour les nombres, ce champ sera évalué.
-          </p>
+          
+          {safeContent.answerFormat === 'equation' && <span className="font-bold text-blue-800 text-lg">{'}'}</span>}
         </div>
+
+        <p className="text-[10px] text-blue-600 mt-2">
+           Astuce : Écrivez simplement les valeurs. Le système ajoutera les accolades et symboles mathématiques automatiquement.
+        </p>
       </div>
     </div>
   );
 };
+
+const ToolBtn = ({ label, val, onClick, icon }) => (
+  <button onClick={() => onClick(val)} className="px-2 py-1 bg-white border border-blue-200 rounded text-xs font-bold text-blue-700 hover:bg-blue-100 flex items-center gap-1">
+    {icon} {label}
+  </button>
+);
 
 export default QuestionEditor;
