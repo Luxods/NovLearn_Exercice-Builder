@@ -1,7 +1,5 @@
 import React from 'react';
 import { 
-  Type, FunctionSquare, Equal, LineChart, ListOrdered, 
-  ArrowUpRight, Plus, Move, HelpCircle, ListChecks, GitFork, 
   Info, Code
 } from 'lucide-react';
 
