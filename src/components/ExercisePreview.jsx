@@ -6,15 +6,9 @@ const ExercisePreview = ({ currentExercise, generatedValues }) => {
     <div className="space-y-6">
       <div className="border-b-2 pb-4">
         <h3 className="text-2xl font-bold text-gray-800">{currentExercise.title}</h3>
-        <div className="flex gap-4 mt-2 text-sm">
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
-            📚 {currentExercise.chapter}
-          </span>
-          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-            ⭐ {currentExercise.difficulty}
-          </span>
-        </div>
+        {/* ... (Code d'affichage des badges et debug inchangé) ... */}
         
+        {/* Debug Box optionnelle */}
         {currentExercise.variables.length > 0 && (
           <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
             <p className="text-sm font-medium text-purple-900 mb-1">
@@ -35,7 +29,8 @@ const ExercisePreview = ({ currentExercise, generatedValues }) => {
         <ElementRenderer
           key={element.id}
           element={element}
-          generatedValues={generatedValues}
+          // 👇 C'EST ICI LE CHANGEMENT : variables={generatedValues}
+          variables={generatedValues} 
         />
       ))}
     </div>

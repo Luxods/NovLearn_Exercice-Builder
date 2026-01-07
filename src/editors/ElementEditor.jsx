@@ -29,21 +29,21 @@ const ElementEditor = ({ element, updateElement }) => {
       return <FunctionEditor content={content} onUpdate={handleUpdate} />;
     case 'graph':
       return <GraphEditor content={content} onUpdate={handleUpdate} />;
-    case 'variation_table':
+    case 'variationTable':
       return <VariationTableEditor content={content} onUpdate={handleUpdate} />;
-    case 'sign_table':
+    case 'signTable':
       return <SignTableEditor content={content} onUpdate={handleUpdate} />;
-    case 'proba_tree':
+    case 'probaTree':
       return <ProbaTreeEditor content={content} onUpdate={handleUpdate} />;
     case 'sequence':
       return <SequenceEditor content={content} onUpdate={handleUpdate} />;
-    case 'discrete_graph':
+    case 'discreteGraph':
       return <DiscreteGraphEditor content={content} onUpdate={handleUpdate} />;
-    case 'complex_plane':
+    case 'complexPlane':
       return <ComplexPlaneEditor content={content} onUpdate={handleUpdate} />;
     case 'vector':
       return <VectorEditor content={content} onUpdate={handleUpdate} />;
-    case 'stats_table':
+    case 'statsTable':
       return <StatsTableEditor content={content} onUpdate={handleUpdate} />;
     case 'equation':
       return <EquationEditor content={content} onUpdate={handleUpdate} />;

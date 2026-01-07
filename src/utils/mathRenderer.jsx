@@ -3,207 +3,123 @@ import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
 /**
- * Formatte une valeur numérique en gérant les signes intelligemment
+ * Formatte une valeur numérique
  */
-const formatValue = (value, context = 'standalone') => {
+const formatValue = (value) => {
   if (value === null || value === undefined) return '';
-  
   const numValue = typeof value === 'number' ? value : parseFloat(value);
-  
   if (isNaN(numValue)) return String(value);
   
-  // Formater le nombre (enlever les .00 inutiles)
-  let formatted = Number.isInteger(numValue) 
+  return Number.isInteger(numValue) 
     ? numValue.toString() 
     : parseFloat(numValue.toFixed(4)).toString();
-  
-  // Si négatif et dans un contexte d'addition/soustraction, mettre entre parenthèses
-  if (numValue < 0 && context === 'operation') {
-    formatted = `(${formatted})`;
-  }
-  
-  return formatted;
 };
 
 /**
- * Nettoie les expressions mathématiques après remplacement
+ * Nettoie et simplifie une expression mathématique
  */
 const cleanMathExpression = (expression) => {
   let cleaned = expression;
+
+  // 1. Gérer le coefficient 0 (0x, 0x^2, 0\pi...) -> devient "0"
+  // Regex : 0 suivi d'une lettre ou commande, et de tout ce qui suit
+  cleaned = cleaned.replace(/(?<![\d.])0\s*[a-zA-Z\\][a-zA-Z0-9^_{}\\]*/g, '0');
+
+  // 2. Gérer le coefficient 1 (1x -> x, 1\pi -> \pi)
+  cleaned = cleaned.replace(/(?<![\d.])1\s*([a-zA-Z\\])/g, '$1');
+
+  // 3. NETTOYAGE DES ZÉROS (Cœur du problème)
   
-  // Remplacer + - par -
+  // A. Zéros au MILIEU ou à la FIN (+ 0, - 0)
+  // On enlève "+ 0" ou "- 0" s'ils ne sont pas suivis d'un point décimal
+  cleaned = cleaned.replace(/[+-]\s*0(?![0-9.])/g, '');
+
+  // B. Zéro au DÉBUT suivi d'un signe (0 + x -> + x -> x)
+  // Ex: "0 + 3x" devient "+ 3x" (le + sera nettoyé à l'étape 6)
+  cleaned = cleaned.replace(/^\s*0\s*([+-])/, '$1');
+
+  // C. Zéro au DÉBUT suivi de rien (C'est juste "0") -> On garde !
+  // Si c'est "0", on ne touche pas.
+
+  // 5. GESTION DES SIGNES
   cleaned = cleaned.replace(/\+\s*-/g, '-');
-  
-  // Remplacer - - par +
   cleaned = cleaned.replace(/-\s*-/g, '+');
-  
-  // Remplacer +- par -
+  cleaned = cleaned.replace(/\+\s*\+/g, '+');
+  cleaned = cleaned.replace(/\+ -/g, '-');
   cleaned = cleaned.replace(/\+-/g, '-');
-  
-  // Remplacer --  par +
   cleaned = cleaned.replace(/--/g, '+');
   
-  // Remplacer les parenthèses inutiles autour des nombres positifs
+  // 6. NETTOYAGE FINAL DU DÉBUT DE LIGNE
+  // Enlever le "+" au tout début (ex: "+ x^2" -> "x^2")
+  cleaned = cleaned.replace(/^\s*\+/, '');
+
+  // 7. Enlever les parenthèses autour des nombres positifs isolés
   cleaned = cleaned.replace(/\((\d+\.?\d*)\)/g, '$1');
+
+  // 8. SI TOUT EST VIDE (ex: 0x -> 0 -> vide), on remet "0"
+  if (expression.trim() !== '' && cleaned.trim() === '') {
+    return '0';
+  }
   
-  // Nettoyer les espaces multiples
-  cleaned = cleaned.replace(/\s+/g, ' ');
-  
-  return cleaned;
+  return cleaned.replace(/\s+/g, ' ').trim();
 };
 
 /**
- * Remplace les variables AVEC accolades {var} - Version intelligente
+ * Remplace @variable par sa valeur et nettoie le résultat
  */
-export const replaceVariablesWithBraces = (text, variables = {}) => {
-  if (typeof text !== 'string') {
-    return String(text || '');
-  }
-  
-  if (!variables || Object.keys(variables).length === 0) {
-    return text;
-  }
-  
-  let result = text;
-  
-  Object.entries(variables).forEach(([key, value]) => {
-    const regex = new RegExp(`\\{${key}\\}`, 'g');
-    
-    // Chercher le contexte autour de chaque occurrence
-    let match;
-    const tempRegex = new RegExp(`([+\\-]?)\\s*\\{${key}\\}`, 'g');
-    const matches = [];
-    
-    while ((match = tempRegex.exec(text)) !== null) {
-      matches.push({
-        index: match.index,
-        precedingSign: match[1],
-        fullMatch: match[0]
-      });
-    }
-    
-    // Remplacer en tenant compte du contexte
-    matches.reverse().forEach(({ precedingSign, fullMatch }) => {
-      const numValue = typeof value === 'number' ? value : parseFloat(value);
-      let replacement = formatValue(value);
-      
-      if (precedingSign && !isNaN(numValue)) {
-        if (precedingSign === '+' && numValue < 0) {
-          // +{-5} devient -5 (on enlève le +)
-          replacement = ` ${replacement}`;
-        } else if (precedingSign === '-' && numValue < 0) {
-          // -{-5} devient +5
-          replacement = ` + ${Math.abs(numValue)}`;
-        } else if (precedingSign === '-') {
-          // -{5} reste -5
-          replacement = ` - ${Math.abs(numValue)}`;
-        } else if (precedingSign === '+') {
-          // +{5} reste +5
-          replacement = ` + ${Math.abs(numValue)}`;
-        }
-        
-        result = result.replace(fullMatch, replacement);
-      }
-    });
-    
-    // Remplacer les occurrences restantes (sans signe devant)
-    result = result.replace(regex, formatValue(value));
-  });
-  
-  // Nettoyer l'expression finale
-  result = cleanMathExpression(result);
-  
-  return result;
-};
+export const replaceVariables = (text, variables = {}) => {
+  if (typeof text !== 'string') return String(text || '');
+  if (!variables || Object.keys(variables).length === 0) return text.replace(/@@/g, '@');
 
-/**
- * Remplace les variables SANS accolades - Version intelligente
- */
-export const replaceVariablesWithoutBraces = (text, variables = {}) => {
-  if (typeof text !== 'string') {
-    return String(text || '');
-  }
+  let result = text.replace(/@@/g, '##ESCAPED_AT##');
   
-  if (!variables || Object.keys(variables).length === 0) {
-    return text;
-  }
-  
-  let result = text;
-  
-  // Trier par longueur décroissante
   const sortedKeys = Object.keys(variables).sort((a, b) => b.length - a.length);
   
   sortedKeys.forEach(key => {
     const value = variables[key];
     const numValue = typeof value === 'number' ? value : parseFloat(value);
     
-    // Créer plusieurs patterns pour différents contextes
-    const patterns = [
-      // Variable précédée d'un opérateur
-      {
-        regex: new RegExp(`([+\\-*/])\\s*\\b${key}\\b`, 'g'),
-        replace: (match, op) => {
-          if (isNaN(numValue)) return match;
-          
-          if (op === '+' && numValue < 0) {
-            return ` - ${Math.abs(numValue)}`;
-          } else if (op === '-' && numValue < 0) {
-            return ` + ${Math.abs(numValue)}`;
-          } else if (op === '+') {
-            return ` + ${Math.abs(numValue)}`;
-          } else if (op === '-') {
-            return ` - ${Math.abs(numValue)}`;
-          } else {
-            // Pour * et /, garder les parenthèses si négatif
-            return `${op}${numValue < 0 ? `(${numValue})` : numValue}`;
-          }
-        }
-      },
-      // Variable au début ou isolée
-      {
-        regex: new RegExp(`\\b${key}\\b`, 'g'),
-        replace: () => formatValue(value)
-      }
-    ];
+    // Regex : Cherche @nom avec contexte
+    const regex = new RegExp(`([+\\-]?)(\\s*)@${key}(?![a-zA-Z0-9_])`, 'g');
     
-    // Appliquer les patterns dans l'ordre
-    patterns.forEach(({ regex, replace }) => {
-      result = result.replace(regex, replace);
+    result = result.replace(regex, (match, sign, space) => {
+      if (isNaN(numValue)) return (sign || '') + (space || '') + formatValue(value);
+
+      const formattedAbs = formatValue(Math.abs(numValue));
+
+      if (sign === '+') {
+        if (numValue < 0) return `${space}- ${formattedAbs}`;
+        return `${space}+ ${formattedAbs}`;
+      } 
+      else if (sign === '-') {
+        if (numValue < 0) return `${space}+ ${formattedAbs}`;
+        return `${space}- ${formattedAbs}`;
+      }
+      
+      if (numValue < 0) return `${space}-${formattedAbs}`;
+      
+      return (sign || '') + (space || '') + formatValue(value);
     });
   });
+
+  result = result.replace(/##ESCAPED_AT##/g, '@');
   
-  // Nettoyer l'expression finale
-  result = cleanMathExpression(result);
-  
-  return result;
+  return cleanMathExpression(result);
 };
 
-/**
- * Fonction helper pour choisir automatiquement
- */
-export const replaceVariables = (text, variables = {}, requireBraces = true) => {
-  const replacedText = requireBraces 
-    ? replaceVariablesWithBraces(text, variables)
-    : replaceVariablesWithoutBraces(text, variables);
-  
-  // Nettoyer une dernière fois
-  return cleanMathExpression(replacedText);
-};
+// Alias pour compatibilité
+export const replaceVariablesWithBraces = replaceVariables;
+export const replaceVariablesWithoutBraces = replaceVariables;
 
 /**
- * Composant pour le rendu math avec gestion intelligente des signes
+ * Composant MathText
  */
-export const MathText = ({ content, variables = {}, className = '', requireBraces = true }) => {
+export const MathText = ({ content, variables = {}, className = '', displayMode = false }) => {
   const textContent = String(content || '');
+  if (!textContent) return null;
   
-  if (!textContent) {
-    return null;
-  }
+  const processedContent = replaceVariables(textContent, variables);
   
-  // Remplacer les variables selon le mode
-  const processedContent = replaceVariables(textContent, variables, requireBraces);
-  
-  // Séparer le texte et les formules math
   const parts = [];
   const regex = /\$\$([\s\S]*?)\$\$|\$(.*?)\$/g;
   let lastIndex = 0;
@@ -211,69 +127,35 @@ export const MathText = ({ content, variables = {}, className = '', requireBrace
   let key = 0;
   
   while ((match = regex.exec(processedContent)) !== null) {
-    // Ajouter le texte avant la formule
     if (match.index > lastIndex) {
-      const textBefore = processedContent.substring(lastIndex, match.index);
-      if (textBefore) {
-        parts.push(
-          <span key={`text-${key++}`}>{textBefore}</span>
-        );
-      }
+      parts.push(<span key={`text-${key++}`}>{processedContent.substring(lastIndex, match.index)}</span>);
     }
     
-    // Déterminer si c'est bloc ou inline
     const isBlock = !!match[1];
     const formula = match[1] || match[2];
     
     if (formula) {
-      // Nettoyer la formule une dernière fois
-      const cleanFormula = cleanMathExpression(formula);
-      
-      try {
-        if (isBlock) {
-          parts.push(
-            <BlockMath key={`math-${key++}`} math={cleanFormula} />
-          );
-        } else {
-          parts.push(
-            <InlineMath key={`math-${key++}`} math={cleanFormula} />
-          );
-        }
-      } catch (error) {
-        console.error('Math rendering error:', error);
-        parts.push(
-          <span key={`error-${key++}`} style={{ color: 'red' }}>
-            {match[0]}
-          </span>
-        );
+      if (isBlock || displayMode) {
+        parts.push(<BlockMath key={`math-${key++}`} math={formula} />);
+      } else {
+        parts.push(<InlineMath key={`math-${key++}`} math={formula} />);
       }
     }
-    
     lastIndex = match.index + match[0].length;
   }
   
-  // Ajouter le texte restant
   if (lastIndex < processedContent.length) {
-    parts.push(
-      <span key={`text-${key++}`}>
-        {processedContent.substring(lastIndex)}
-      </span>
-    );
+    parts.push(<span key={`text-${key++}`}>{processedContent.substring(lastIndex)}</span>);
   }
   
-  // Si pas de formules, retourner le texte simple
-  if (parts.length === 0) {
-    return <span className={className}>{processedContent}</span>;
-  }
+  if (parts.length === 0) return <span className={className}>{processedContent}</span>;
   
   return <div className={className}>{parts}</div>;
 };
 
-/**
- * Fonction utilitaire pour formater les expressions mathématiques
- * Peut être utilisée dans les editors pour prévisualiser
- */
-export const formatMathExpression = (expression, variables = {}) => {
-  const replaced = replaceVariablesWithoutBraces(expression, variables);
-  return cleanMathExpression(replaced);
+export const Latex = ({ children, variables = {}, display = false, className = '' }) => {
+  const processed = replaceVariables(children, variables);
+  return display ? <BlockMath math={processed} /> : <InlineMath math={processed} />;
 };
+
+export default MathText;

@@ -1,64 +1,58 @@
 import React from 'react';
-import { evaluateExpression } from '../utils/evaluateExpression';
+import MathText from '../utils/mathRenderer';
 
-const VariationTableRenderer = ({ content, generatedValues }) => {
-  const points = content.points || [];
-  
+const VariationTableRenderer = ({ content, variables }) => {
+  const headers = content.headers || ["x", "f(x)"];
+  const columns = content.columns || [];
+
   return (
-    <div className="variation-table">
-      <table className="w-full border border-gray-400 bg-white">
-        <thead>
-          <tr>
-            <td className="border-r border-b border-gray-400 p-2 bg-blue-50 font-bold text-center w-16">
-              x
-            </td>
-            {/* On alterne : valeur - flèche - valeur - flèche - valeur */}
-            {points.map((point, i) => (
-              <React.Fragment key={i}>
-                {/* Colonne pour la valeur */}
-                <td className="border-b border-gray-400 p-2 text-center bg-blue-50 font-semibold min-w-[60px]">
-                  {evaluateExpression(point.x, generatedValues)}
-                </td>
-                {/* Colonne pour la variation (sauf après le dernier point) */}
-                {i < points.length - 1 && (
-                  <td className="border-b border-gray-400 p-2 text-center bg-blue-50 min-w-[80px]">
-                    {/* Espace pour la flèche */}
-                  </td>
-                )}
-              </React.Fragment>
+    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+      <div className="inline-block min-w-full border border-gray-800 rounded">
+        {/* Ligne X */}
+        <div className="flex border-b border-gray-800">
+          <div className="w-16 p-2 border-r border-gray-800 flex items-center justify-center bg-gray-50 font-bold">
+            <MathText content={`$${headers[0]}$`} variables={variables} />
+          </div>
+          <div className="flex-1 flex justify-between px-8 py-2">
+            {columns.map((col, i) => (
+              <div key={i} className="text-center w-12">
+                <MathText content={`$${col.x}$`} variables={variables} />
+              </div>
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="border-r border-gray-400 p-2 bg-blue-50 font-bold text-center">
-              f(x)
-            </td>
-            {points.map((point, i) => (
-              <React.Fragment key={i}>
-                {/* Colonne pour la valeur de f(x) */}
-                <td className="p-3 text-center font-semibold">
-                  {point.value && evaluateExpression(point.value, generatedValues)}
-                </td>
-                {/* Colonne pour la variation (entre ce point et le suivant) */}
-                {i < points.length - 1 && (
-                  <td className="p-2 text-center">
-                    {point.variation === 'croissante' && (
-                      <span className="text-green-600 text-3xl">↗</span>
-                    )}
-                    {point.variation === 'décroissante' && (
-                      <span className="text-red-600 text-3xl">↘</span>
-                    )}
-                    {point.variation === 'constante' && (
-                      <span className="text-gray-600 text-2xl">→</span>
-                    )}
-                  </td>
-                )}
-              </React.Fragment>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+          </div>
+        </div>
+
+        {/* Ligne f(x) */}
+        <div className="flex h-32">
+          <div className="w-16 border-r border-gray-800 flex items-center justify-center bg-gray-50 font-bold">
+            <MathText content={`$${headers[1]}$`} variables={variables} />
+          </div>
+          
+          <div className="flex-1 flex justify-between px-8 py-4 relative">
+            {/* Traits de variation (Simplifié : flèches CSS à améliorer si besoin) */}
+            <div className="absolute inset-0 pointer-events-none opacity-5">
+               {/* Ici on pourrait tracer des SVG, pour l'instant on laisse vide pour la clarté */}
+            </div>
+
+            {columns.map((col, i) => {
+              // Positionnement vertical flex
+              let align = "items-center";
+              if (col.variation === 'high') align = "items-start";
+              if (col.variation === 'low') align = "items-end";
+
+              return (
+                <div key={i} className={`flex flex-col ${align} justify-center w-12 h-full`}>
+                   {col.val && (
+                     <div className="font-bold">
+                       <MathText content={`$${col.val}$`} variables={variables} />
+                     </div>
+                   )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,157 +1,107 @@
 import React from 'react';
 
 const GraphEditor = ({ content, onUpdate }) => {
+  const safeContent = content || {
+    functions: [{ expression: 'x^2', color: '#2563eb' }],
+    xMin: -5,
+    xMax: 5,
+    yMin: -5,
+    yMax: 5,
+    showGrid: true
+  };
+
+  const handleFunctionChange = (index, field, value) => {
+    const newFunctions = [...safeContent.functions];
+    newFunctions[index] = { ...newFunctions[index], [field]: value };
+    onUpdate({ ...safeContent, functions: newFunctions });
+  };
+
+  const addFunction = () => {
+    onUpdate({
+      ...safeContent,
+      functions: [...safeContent.functions, { expression: '', color: '#000000' }]
+    });
+  };
+
+  const removeFunction = (index) => {
+    const newFunctions = safeContent.functions.filter((_, i) => i !== index);
+    onUpdate({ ...safeContent, functions: newFunctions });
+  };
+
   return (
-    <div className="space-y-2">
-      <p>Fonction :</p>
-      <input
-        type="text"
-        className="w-full p-2 border rounded font-mono"
-        value={content.expression || ''}
-        onChange={(e) => onUpdate({ ...content, expression: e.target.value })}
-        placeholder="a*x^2+b"
-      />
-      
-      {/* Fenêtrage X toujours visible */}
-      <div className="grid grid-cols-2 gap-1">
+    <div className="space-y-4">
+      {/* Paramètres de la fenêtre */}
+      <div className="grid grid-cols-4 gap-2 text-sm">
         <div>
-          <label className="text-xs text-gray-600">x Min</label>
-          <input
-            type="text"  // Changé de "number" à "text"
-            className="w-full p-1 border rounded text-sm"
-            value={content.xMin ?? ''}
-            onChange={(e) => {
-              const value = e.target.value;
-              // Permettre vide, le signe moins seul, ou un nombre valide
-              if (value === '' || value === '-' || !isNaN(parseFloat(value))) {
-                onUpdate({ 
-                  ...content, 
-                  xMin: value === '' || value === '-' ? value : parseFloat(value) 
-                });
-              }
-            }}
-            onBlur={(e) => {
-              // Si vide ou juste un tiret, mettre la valeur par défaut
-              const value = e.target.value;
-              if (value === '' || value === '-') {
-                onUpdate({ ...content, xMin: -10 });
-              }
-            }}
-            placeholder="-10"
+          <label>X Min</label>
+          <input 
+            type="number" className="w-full p-1 border rounded"
+            value={safeContent.xMin} 
+            onChange={e => onUpdate({...safeContent, xMin: Number(e.target.value)})} 
           />
         </div>
         <div>
-          <label className="text-xs text-gray-600">x Max</label>
-          <input
-            type="text"  // Changé de "number" à "text"
-            className="w-full p-1 border rounded text-sm"
-            value={content.xMax ?? ''}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === '' || value === '-' || !isNaN(parseFloat(value))) {
-                onUpdate({ 
-                  ...content, 
-                  xMax: value === '' || value === '-' ? value : parseFloat(value) 
-                });
-              }
-            }}
-            onBlur={(e) => {
-              const value = e.target.value;
-              if (value === '' || value === '-') {
-                onUpdate({ ...content, xMax: 10 });
-              }
-            }}
-            placeholder="10"
+          <label>X Max</label>
+          <input 
+            type="number" className="w-full p-1 border rounded"
+            value={safeContent.xMax} 
+            onChange={e => onUpdate({...safeContent, xMax: Number(e.target.value)})} 
+          />
+        </div>
+        <div>
+          <label>Y Min</label>
+          <input 
+            type="number" className="w-full p-1 border rounded"
+            value={safeContent.yMin} 
+            onChange={e => onUpdate({...safeContent, yMin: Number(e.target.value)})} 
+          />
+        </div>
+        <div>
+          <label>Y Max</label>
+          <input 
+            type="number" className="w-full p-1 border rounded"
+            value={safeContent.yMax} 
+            onChange={e => onUpdate({...safeContent, yMax: Number(e.target.value)})} 
           />
         </div>
       </div>
 
-      {/* Fenêtrage Y - visible seulement si auto_window est désactivé */}
-      {!content.auto_window && (
-        <div className="grid grid-cols-2 gap-1">
-          <div>
-            <label className="text-xs text-gray-600">y Min</label>
+      {/* Liste des fonctions */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Fonctions à tracer</label>
+        {safeContent.functions.map((fn, idx) => (
+          <div key={idx} className="flex gap-2 items-center">
             <input
-              type="text"  // Changé de "number" à "text"
-              className="w-full p-1 border rounded text-sm"
-              value={content.yMin ?? ''}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '' || value === '-' || !isNaN(parseFloat(value))) {
-                  onUpdate({ 
-                    ...content, 
-                    yMin: value === '' || value === '-' ? value : parseFloat(value) 
-                  });
-                }
-              }}
-              onBlur={(e) => {
-                const value = e.target.value;
-                if (value === '' || value === '-') {
-                  onUpdate({ ...content, yMin: -10 });
-                }
-              }}
-              placeholder="-10"
+              type="color"
+              className="w-8 h-9 p-0.5 border rounded cursor-pointer"
+              value={fn.color}
+              onChange={(e) => handleFunctionChange(idx, 'color', e.target.value)}
             />
+            <div className="flex-1 relative">
+              <span className="absolute left-2 top-2 text-gray-400 text-sm">f(x)=</span>
+              <input
+                type="text"
+                className="w-full p-2 pl-12 border rounded font-mono"
+                value={fn.expression}
+                onChange={(e) => handleFunctionChange(idx, 'expression', e.target.value)}
+                placeholder="@a x^2 + @b"
+              />
+            </div>
+            <button 
+              onClick={() => removeFunction(idx)}
+              className="text-red-500 hover:bg-red-50 p-2 rounded"
+            >
+              ×
+            </button>
           </div>
-          <div>
-            <label className="text-xs text-gray-600">y Max</label>
-            <input
-              type="text"  // Changé de "number" à "text"
-              className="w-full p-1 border rounded text-sm"
-              value={content.yMax ?? ''}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '' || value === '-' || !isNaN(parseFloat(value))) {
-                  onUpdate({ 
-                    ...content, 
-                    yMax: value === '' || value === '-' ? value : parseFloat(value) 
-                  });
-                }
-              }}
-              onBlur={(e) => {
-                const value = e.target.value;
-                if (value === '' || value === '-') {
-                  onUpdate({ ...content, yMax: 10 });
-                }
-              }}
-              placeholder="10"
-            />
-          </div>
-        </div>
-      )}
-
-      <div className="flex gap-3 flex-wrap">
-        <label className="flex items-center gap-1 text-xs">
-          <input
-            type="checkbox"
-            checked={content.showGrid !== false}
-            onChange={(e) => onUpdate({ ...content, showGrid: e.target.checked })}
-          />
-          Afficher grille
-        </label>
-        <label className="flex items-center gap-1 text-xs">
-          <input
-            type="checkbox"
-            checked={content.showAxes !== false}
-            onChange={(e) => onUpdate({ ...content, showAxes: e.target.checked })}
-          />
-          Afficher axes
-        </label>
-        <label className="flex items-center gap-1 text-xs">
-          <input
-            type="checkbox"
-            checked={content.auto_window || false}
-            onChange={(e) => onUpdate({ ...content, auto_window: e.target.checked })}
-          />
-          Fenêtrage auto Y
-        </label>
+        ))}
+        <button 
+          onClick={addFunction}
+          className="text-sm text-blue-600 hover:underline"
+        >
+          + Ajouter une fonction
+        </button>
       </div>
-      
-      {content.auto_window && (
-        <p className="text-xs text-gray-500 italic">
-          Les limites Y seront calculées automatiquement selon la fonction
-        </p>
-      )}
     </div>
   );
 };

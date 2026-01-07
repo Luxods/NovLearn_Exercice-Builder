@@ -1,62 +1,48 @@
 import React from 'react';
-import { evaluateExpression } from '../utils/evaluateExpression';
+import MathText from '../utils/mathRenderer';
 
-const SignTableRenderer = ({ content, generatedValues }) => {
-  const points = content.points || [];
-  
+const SignTableRenderer = ({ content, variables }) => {
+  const headers = content.headers || ["x", "f(x)"];
+  const intervals = content.intervals || [];
+
   return (
-    <div className="sign-table">
-      <table className="w-full border border-gray-400 bg-white">
-        <thead>
-          <tr>
-            <td className="border-r border-b border-gray-400 p-2 bg-yellow-50 font-bold text-center w-16">
-              x
+    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+      <table className="w-full border-collapse border border-gray-800">
+        <tbody>
+          {/* Ligne X */}
+          <tr className="border-b border-gray-800">
+            <td className="w-16 p-2 border-r border-gray-800 text-center bg-gray-50 font-bold">
+               <MathText content={`$${headers[0]}$`} variables={variables} />
             </td>
-            {/* On alterne : valeur - signe - valeur - signe - valeur */}
-            {points.map((point, i) => (
-              <React.Fragment key={i}>
-                {/* Colonne pour la valeur */}
-                <td className="border-b border-gray-400 p-2 text-center bg-yellow-50 font-semibold min-w-[60px]">
-                  {evaluateExpression(point.x, generatedValues)}
-                </td>
-                {/* Colonne pour le signe (sauf après le dernier point) */}
-                {i < points.length - 1 && (
-                  <td className="border-b border-gray-400 p-2 text-center bg-yellow-50 min-w-[80px]">
-                    {/* Espace pour le signe */}
-                  </td>
-                )}
-              </React.Fragment>
+            {intervals.map((item, i) => (
+              <td key={i} className="p-2 text-center relative min-w-[60px]">
+                 {/* Si ce n'est pas le dernier, on affiche la borne */}
+                 <MathText content={`$${item.val}$`} variables={variables} />
+              </td>
             ))}
           </tr>
-        </thead>
-        <tbody>
+          {/* Ligne Signes */}
           <tr>
-            <td className="border-r border-gray-400 p-2 bg-yellow-50 font-bold text-center">
-              f(x)
+            <td className="p-2 border-r border-gray-800 text-center bg-gray-50 font-bold">
+               <MathText content={`$${headers[1]}$`} variables={variables} />
             </td>
-            {points.map((point, i) => (
-              <React.Fragment key={i}>
-                {/* Valeur en ce point (généralement 0 ou || pour valeur interdite) */}
-                <td className="p-3 text-center">
-                  {point.isZero && (
-                    <span className="text-gray-600 text-xl font-bold">0</span>
-                  )}
-                  {point.isForbidden && (
-                    <span className="text-gray-400 text-xl">||</span>
-                  )}
-                </td>
-                {/* Signe dans l'intervalle suivant */}
-                {i < points.length - 1 && (
-                  <td className="p-3 text-center">
-                    {point.sign === '+' && (
-                      <span className="text-green-600 text-2xl font-bold">+</span>
-                    )}
-                    {point.sign === '-' && (
-                      <span className="text-red-600 text-2xl font-bold">−</span>
-                    )}
-                  </td>
+            {intervals.map((item, i) => (
+              <td key={i} className="p-2 text-center relative border-l border-dashed border-gray-300 first:border-l-0">
+                {/* Logique d'affichage des signes et zéros */}
+                {item.sign === '0' ? (
+                   <div className="relative inline-block w-full">
+                     <div className="absolute top-0 bottom-0 left-1/2 w-px bg-black -translate-x-1/2 h-full -mt-2 -mb-2"></div>
+                     <span className="relative z-10 bg-white px-1">0</span>
+                   </div>
+                ) : item.sign === 'z' ? (
+                   <div className="h-full w-full flex justify-center gap-1">
+                     <div className="w-px bg-black h-8"></div>
+                     <div className="w-px bg-black h-8"></div>
+                   </div>
+                ) : (
+                   <span className="font-bold text-lg">{item.sign}</span>
                 )}
-              </React.Fragment>
+              </td>
             ))}
           </tr>
         </tbody>
@@ -64,5 +50,4 @@ const SignTableRenderer = ({ content, generatedValues }) => {
     </div>
   );
 };
-
 export default SignTableRenderer;

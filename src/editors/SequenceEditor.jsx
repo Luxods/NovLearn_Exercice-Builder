@@ -1,111 +1,126 @@
 import React from 'react';
 
 const SequenceEditor = ({ content, onUpdate }) => {
+  // 1. INITIALISATION ROBUSTE (comme pour FunctionEditor)
+  const safeContent = {
+    name: 'u',
+    type: 'explicit', // 'explicit' ou 'recursive'
+    expression: '',
+    firstTerm: '',
+    firstTermIndex: '0',
+    ...content // Écrase les défauts si le contenu existe
+  };
+
+  const updateContent = (field, value) => {
+    onUpdate({ ...safeContent, [field]: value });
+  };
+
   return (
-    <div className="space-y-3">
-      <div>
-        <label className="text-xs font-medium">Type de suite</label>
-        <select
-          className="w-full p-1 border rounded text-sm"
-          value={content.type || 'explicit'}
-          onChange={(e) => onUpdate({ ...content, type: e.target.value })}
-        >
-          <option value="explicit">Explicite (formule directe)</option>
-          <option value="recursive">Récurrente (U_n+1 = f(U_n))</option>
-          <option value="arithmetic">Arithmétique (raison r)</option>
-          <option value="geometric">Géométrique (raison q)</option>
-        </select>
+    <div className="space-y-4">
+      {/* Configuration Générale (Nom + Type) */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-1">
+          <label className="block text-sm font-medium mb-1">Nom</label>
+          <input 
+            type="text"
+            className="w-full p-2 border rounded font-mono text-center"
+            value={safeContent.name}
+            onChange={(e) => updateContent('name', e.target.value)}
+            placeholder="u"
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium mb-1">Type de définition</label>
+          <select 
+            className="w-full p-2 border rounded bg-white"
+            value={safeContent.type}
+            onChange={(e) => updateContent('type', e.target.value)}
+          >
+            <option value="explicit">Explicite (en fonction de n)</option>
+            <option value="recursive">Récurrente (en fonction de Un)</option>
+          </select>
+        </div>
       </div>
 
-      {/* FORMULE EXPLICITE - seulement si type = explicit */}
-      {content.type === 'explicit' && (
-        <div>
-          <label className="text-xs font-medium">Formule explicite</label>
-          <input
-            type="text"
-            className="w-full p-2 border rounded font-mono text-sm"
-            value={content.formula || ''}
-            onChange={(e) => onUpdate({ ...content, formula: e.target.value })}
-            placeholder="Ex: U_n = 2*n + 1"
-          />
-        </div>
-      )}
+      {/* Zone d'édition de la formule */}
+      <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        
+        {/* CAS 1 : SUITE EXPLICITE */}
+        {safeContent.type === 'explicit' ? (
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700">
+              Formule explicite
+            </label>
+            <div className="flex items-center gap-2">
+              {/* Le label mathématique s'adapte au nom choisi */}
+              <span className="font-mono text-lg whitespace-nowrap text-gray-800">
+                {safeContent.name}_n =
+              </span>
+              <input 
+                type="text"
+                className="flex-1 p-2 border rounded font-mono"
+                value={safeContent.expression}
+                onChange={(e) => updateContent('expression', e.target.value)}
+                placeholder="Ex: @a n + @b"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Utilisez <code>n</code> pour l'indice et <code>@a</code> pour les variables.
+            </p>
+          </div>
+        ) : (
+          /* CAS 2 : SUITE RÉCURRENTE */
+          <div className="space-y-4">
+            {/* Premier terme */}
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700">
+                Premier terme
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-lg whitespace-nowrap text-gray-800">
+                  {safeContent.name}_
+                  <input
+                    type="text"
+                    className="w-8 p-0.5 border rounded text-center text-sm mx-0.5"
+                    value={safeContent.firstTermIndex}
+                    onChange={(e) => updateContent('firstTermIndex', e.target.value)}
+                  />
+                  =
+                </span>
+                <input 
+                  type="text"
+                  className="flex-1 p-2 border rounded font-mono"
+                  value={safeContent.firstTerm}
+                  onChange={(e) => updateContent('firstTerm', e.target.value)}
+                  placeholder="Ex: @u0"
+                />
+              </div>
+            </div>
 
-      {/* RELATION DE RÉCURRENCE - seulement si type = recursive */}
-      {content.type === 'recursive' && (
-        <div>
-          <label className="text-xs font-medium">Relation de récurrence</label>
-          <input
-            type="text"
-            className="w-full p-2 border rounded font-mono text-sm"
-            value={content.relation || ''}
-            onChange={(e) => onUpdate({ ...content, relation: e.target.value })}
-            placeholder="Ex: U_n+1 = 2*U_n + 3"
-          />
-        </div>
-      )}
-
-      {/* RAISON - pour arithmétique et géométrique */}
-      {(content.type === 'arithmetic' || content.type === 'geometric') && (
-        <div>
-          <label className="text-xs font-medium">
-            {content.type === 'arithmetic' ? 'Raison r' : 'Raison q'}
-          </label>
-          <input
-            type="text"
-            className="w-full p-1 border rounded text-sm"
-            value={content.reason || ''}
-            onChange={(e) => onUpdate({ ...content, reason: e.target.value })}
-            placeholder={content.type === 'arithmetic' ? 'Ex: 3' : 'Ex: 2'}
-          />
-          <p className="text-xs text-gray-600 mt-1">
-            {content.type === 'arithmetic' 
-              ? `Formule : U_n = U_0 + n × r`
-              : `Formule : U_n = U_0 × q^n`
-            }
-          </p>
-        </div>
-      )}
-
-      {/* PREMIER TERME U₀ - toujours affiché */}
-      <div>
-        <label className="text-xs font-medium">Premier terme U₀</label>
-        <input
-          type="text"
-          className="w-full p-1 border rounded text-sm"
-          value={content.u0 || ''}
-          onChange={(e) => onUpdate({ ...content, u0: e.target.value })}
-          placeholder="Ex: 1"
-        />
+            {/* Relation de récurrence */}
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700">
+                Relation de récurrence
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-lg whitespace-nowrap text-gray-800">
+                  {safeContent.name}_&#123;n+1&#125; =
+                </span>
+                <input 
+                  type="text"
+                  className="flex-1 p-2 border rounded font-mono"
+                  value={safeContent.expression}
+                  onChange={(e) => updateContent('expression', e.target.value)}
+                  placeholder={`Ex: @q ${safeContent.name}_n + @r`}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Utilisez <code>{safeContent.name}_n</code> pour le terme précédent.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Option pour afficher les premiers termes */}
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="showTerms"
-          checked={content.showTerms || false}
-          onChange={(e) => onUpdate({ ...content, showTerms: e.target.checked })}
-        />
-        <label htmlFor="showTerms" className="text-xs">
-          Afficher les premiers termes calculés
-        </label>
-      </div>
-
-      {/* Nombre de termes à afficher */}
-      {content.showTerms && (
-        <div>
-          <label className="text-xs font-medium">Nombre de termes à afficher</label>
-          <input
-            type="number"
-            className="w-20 p-1 border rounded text-sm"
-            value={content.termsCount || 5}
-            min="2"
-            max="10"
-            onChange={(e) => onUpdate({ ...content, termsCount: parseInt(e.target.value) })}
-          />
-        </div>
-      )}
     </div>
   );
 };

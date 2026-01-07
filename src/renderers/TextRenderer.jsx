@@ -1,15 +1,14 @@
 import React from 'react';
-import { MathText } from '../utils/mathRenderer';
+import MathText from '../utils/mathRenderer';
 
-const TextRenderer = ({ content, generatedValues }) => {
+const TextRenderer = ({ content, variables }) => {
+  const text = typeof content === 'string' ? content : content?.text || '';
+
+  if (!text) return null;
+
   return (
-    <div className="p-4 bg-white rounded-lg border border-gray-200">
-      <MathText 
-        content={content?.text || ''} 
-        variables={generatedValues}
-        className="text-gray-800 leading-relaxed"
-        requireBraces={true}  // Nécessite {}
-      />
+    <div className="prose max-w-none text-gray-700 leading-relaxed">
+      <MathText content={text} variables={variables} />
     </div>
   );
 };

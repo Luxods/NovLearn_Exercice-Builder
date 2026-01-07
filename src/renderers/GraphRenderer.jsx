@@ -1,211 +1,145 @@
-import React, { useMemo } from 'react';
-import { replaceVariablesWithoutBraces } from '../utils/mathRenderer';
+import React, { useEffect, useRef } from 'react';
+import { replaceVariables } from '../utils/mathRenderer';
+// On a besoin d'évaluer les expressions pour tracer (on réutilise evaluateExpression)
+import { evaluateExpression } from '../utils/evaluateExpression';
 
-const GraphRenderer = ({ content, generatedValues }) => {
-  // Valeurs par défaut
-  const xMin = content.xMin ?? -10;
-  const xMax = content.xMax ?? 10;
+// Note: Ceci est une version simplifiée utilisant Canvas. 
+// Dans un vrai projet, utilisez Recharts ou JSXGraph.
+const GraphRenderer = ({ content, variables }) => {
+  const canvasRef = useRef(null);
   
-  // Calculer les points et trouver les limites Y si auto_window est activé
-  const { points, autoYMin, autoYMax } = useMemo(() => {
-    const calculatedPoints = [];
-    const steps = 200;
-    let minY = Infinity;
-    let maxY = -Infinity;
+  const width = 400;
+  const height = 300;
+  
+  // Bornes (valeurs par défaut si non définies)
+  const xMin = content.xMin ?? -5;
+  const xMax = content.xMax ?? 5;
+  const yMin = content.yMin ?? -5;
+  const yMax = content.yMax ?? 5;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     
-    // Remplacer les variables dans l'expression
-    let processedExpression = content.expression || '';
-    if (generatedValues) {
-      processedExpression = replaceVariablesWithoutBraces(processedExpression, generatedValues);
+    // Reset
+    ctx.clearRect(0, 0, width, height);
+    
+    // Echelles
+    const xScale = width / (xMax - xMin);
+    const yScale = height / (yMax - yMin);
+    
+    const toScreenX = (x) => (x - xMin) * xScale;
+    const toScreenY = (y) => height - (y - yMin) * yScale;
+    
+    // 1. Grille et Axes
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    
+    // Grille verticale
+    for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+      const sx = toScreenX(x);
+      ctx.moveTo(sx, 0); ctx.lineTo(sx, height);
     }
+    // Grille horizontale
+    for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+      const sy = toScreenY(y);
+      ctx.moveTo(0, sy); ctx.lineTo(width, sy);
+    }
+    ctx.stroke();
     
-    for (let i = 0; i <= steps; i++) {
-      const x = xMin + (xMax - xMin) * i / steps;
-      try {
-        // Préparer l'expression pour l'évaluation
-        let expr = processedExpression;
+    // Axes principaux
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    // Axe Y (x=0)
+    if (xMin <= 0 && xMax >= 0) {
+      const sx = toScreenX(0);
+      ctx.moveTo(sx, 0); ctx.lineTo(sx, height);
+    }
+    // Axe X (y=0)
+    if (yMin <= 0 && yMax >= 0) {
+      const sy = toScreenY(0);
+      ctx.moveTo(0, sy); ctx.lineTo(width, sy);
+    }
+    ctx.stroke();
+
+    // 2. Tracer les fonctions
+    if (content.functions) {
+      content.functions.forEach(fn => {
+        if (!fn.expression) return;
         
-        // Remplacer x par sa valeur
-        expr = expr.replace(/\bx\b/g, `(${x})`);
+        ctx.strokeStyle = fn.color || '#2563eb';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        // On prépare l'expression en remplaçant les @variables
+        // Attention : replaceVariables renvoie du LaTeX "propre" (3x - 5)
+        // Mais pour l'évaluation JS, on a besoin de format JS (3*x - 5)
+        // C'est le rôle de evaluateExpression qui gère les @vars pour le calcul
+        // On crée une petite fonction locale pour évaluer f(x)
+        const getY = (x) => {
+          // On ajoute x aux variables pour l'évaluation
+          const evalVars = { ...variables, x };
+          // evaluateExpression doit retourner un nombre
+          try {
+            // Astuce : evaluateExpression renvoie une string, on la convertit via new Function
+            // OU BIEN on utilise une lib comme mathjs. Ici on fait simple.
+            const exprWithVars = evaluateExpression(fn.expression, evalVars);
+            // On convertit les syntaxes math courantes pour JS
+            const jsExpr = exprWithVars
+              .replace(/\^/g, '**')
+              .replace(/(\d)x/g, '$1*x') // 2x -> 2*x
+              .replace(/x/g, `(${x})`);  // substitution brute de x
+            
+            return new Function(`return ${jsExpr}`)();
+          } catch (e) {
+            return NaN;
+          }
+        };
+
+        // Tracé point par point
+        let first = true;
+        const step = (xMax - xMin) / width; // 1 pixel par step
         
-        // Remplacer les opérateurs et fonctions
-        expr = expr.replace(/\^/g, '**');
-        expr = expr.replace(/\bsin\b/g, 'Math.sin');
-        expr = expr.replace(/\bcos\b/g, 'Math.cos');
-        expr = expr.replace(/\btan\b/g, 'Math.tan');
-        expr = expr.replace(/\bexp\b/g, 'Math.exp');
-        expr = expr.replace(/\bln\b/g, 'Math.log');
-        expr = expr.replace(/\blog\b/g, 'Math.log10');
-        expr = expr.replace(/\bsqrt\b/g, 'Math.sqrt');
-        expr = expr.replace(/\babs\b/g, 'Math.abs');
-        expr = expr.replace(/\bpi\b/g, 'Math.PI');
-        expr = expr.replace(/\be\b/g, 'Math.E');
-        
-        // Évaluer l'expression
-        const y = new Function('Math', `return ${expr}`)(Math);
-        
-        if (!isNaN(y) && isFinite(y)) {
-          calculatedPoints.push({ x, y });
-          minY = Math.min(minY, y);
-          maxY = Math.max(maxY, y);
+        for (let x = xMin; x <= xMax; x += step) {
+          const y = getY(x);
+          if (isNaN(y)) {
+            first = true;
+            continue;
+          }
+          
+          const sx = toScreenX(x);
+          const sy = toScreenY(y);
+          
+          // Clip visuel simple
+          if (sy < -100 || sy > height + 100) {
+            first = true;
+            continue;
+          }
+
+          if (first) {
+            ctx.moveTo(sx, sy);
+            first = false;
+          } else {
+            ctx.lineTo(sx, sy);
+          }
         }
-      } catch (e) {
-        // Ignorer les erreurs pour les points individuels
-      }
+        ctx.stroke();
+      });
     }
     
-    // Ajouter une marge de 10% si on a trouvé des points valides
-    if (minY !== Infinity && maxY !== -Infinity) {
-      const range = maxY - minY;
-      const margin = range * 0.1 || 1; // Au moins 1 unité de marge
-      minY -= margin;
-      maxY += margin;
-      
-      // S'assurer que 0 est visible si proche
-      if (minY > -1 && minY < 0) minY = -1;
-      if (maxY < 1 && maxY > 0) maxY = 1;
-    } else {
-      // Valeurs par défaut si aucun point valide
-      minY = -10;
-      maxY = 10;
-    }
-    
-    return { 
-      points: calculatedPoints, 
-      autoYMin: minY, 
-      autoYMax: maxY 
-    };
-  }, [content.expression, generatedValues, xMin, xMax]);
-  
-  // Utiliser les limites automatiques si auto_window est activé
-  const yMin = content.auto_window ? autoYMin : (content.yMin ?? -10);
-  const yMax = content.auto_window ? autoYMax : (content.yMax ?? 10);
-  
-  // Dimensions du SVG
-  const width = 500;
-  const height = 350;
-  const padding = 50;
-  
-  // Fonctions de mise à l'échelle
-  const scaleX = (x) => padding + ((x - xMin) / (xMax - xMin)) * (width - 2 * padding);
-  const scaleY = (y) => height - padding - ((y - yMin) / (yMax - yMin)) * (height - 2 * padding);
-  
-  // Générer les graduations
-  const generateTicks = (min, max, count = 10) => {
-    const ticks = [];
-    const range = max - min;
-    const step = Math.pow(10, Math.floor(Math.log10(range))) / 2; // Step adaptatif
-    const start = Math.ceil(min / step) * step;
-    
-    for (let value = start; value <= max; value += step) {
-      ticks.push(value);
-    }
-    return ticks;
-  };
-  
-  const xTicks = generateTicks(xMin, xMax);
-  const yTicks = generateTicks(yMin, yMax);
+  }, [content, variables, width, height, xMin, xMax, yMin, yMax]);
 
   return (
-    <div className="relative">
-      <svg width={width} height={height} className="border-2 border-gray-300 bg-white rounded">
-        {/* Grille */}
-        {content.showGrid !== false && (
-          <>
-            {/* Grille verticale */}
-            {xTicks.map((x, i) => (
-              <line
-                key={`grid-v-${i}`}
-                x1={scaleX(x)}
-                y1={padding}
-                x2={scaleX(x)}
-                y2={height - padding}
-                stroke="#e0e0e0"
-                strokeWidth="1"
-              />
-            ))}
-            {/* Grille horizontale */}
-            {yTicks.map((y, i) => (
-              <line
-                key={`grid-h-${i}`}
-                x1={padding}
-                y1={scaleY(y)}
-                x2={width - padding}
-                y2={scaleY(y)}
-                stroke="#e0e0e0"
-                strokeWidth="1"
-              />
-            ))}
-          </>
-        )}
-        
-        {/* Axes */}
-        {content.showAxes !== false && (
-          <>
-            {/* Axe X */}
-            {yMin <= 0 && yMax >= 0 && (
-              <line 
-                x1={padding} 
-                y1={scaleY(0)} 
-                x2={width - padding} 
-                y2={scaleY(0)} 
-                stroke="#000" 
-                strokeWidth="2" 
-              />
-            )}
-            {/* Axe Y */}
-            {xMin <= 0 && xMax >= 0 && (
-              <line 
-                x1={scaleX(0)} 
-                y1={padding} 
-                x2={scaleX(0)} 
-                y2={height - padding} 
-                stroke="#000" 
-                strokeWidth="2" 
-              />
-            )}
-          </>
-        )}
-        
-        {/* Courbe */}
-        {points.length > 1 && (
-          <polyline
-            points={points.map(p => `${scaleX(p.x)},${scaleY(p.y)}`).join(' ')}
-            fill="none"
-            stroke="#3a7bd5"
-            strokeWidth="3"
-          />
-        )}
-        
-        {/* Labels des axes */}
-        {content.showAxes !== false && (
-          <>
-            <text x={width - padding + 15} y={scaleY(Math.max(0, yMin)) + 5} fontSize="14" fontWeight="bold">x</text>
-            <text x={scaleX(Math.max(0, xMin)) + 5} y={padding - 15} fontSize="14" fontWeight="bold">y</text>
-          </>
-        )}
-        
-        {/* Graduations */}
-        <text x={scaleX(xMin)} y={height - padding + 20} fontSize="10" textAnchor="start">
-          {xMin.toFixed(xMin % 1 === 0 ? 0 : 1)}
-        </text>
-        <text x={scaleX(xMax)} y={height - padding + 20} fontSize="10" textAnchor="end">
-          {xMax.toFixed(xMax % 1 === 0 ? 0 : 1)}
-        </text>
-        <text x={padding - 10} y={scaleY(yMin)} fontSize="10" textAnchor="end">
-          {yMin.toFixed(yMin % 1 === 0 ? 0 : 1)}
-        </text>
-        <text x={padding - 10} y={scaleY(yMax)} fontSize="10" textAnchor="end">
-          {yMax.toFixed(yMax % 1 === 0 ? 0 : 1)}
-        </text>
-      </svg>
-      
-      {/* Affichage des limites Y automatiques */}
-      {content.auto_window && (
-        <div className="text-xs text-gray-500 mt-1">
-          Fenêtre Y auto: [{autoYMin.toFixed(2)}, {autoYMax.toFixed(2)}]
-        </div>
-      )}
+    <div className="flex justify-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
+      <canvas 
+        ref={canvasRef} 
+        width={width} 
+        height={height} 
+        className="border border-gray-200 rounded bg-white"
+      />
     </div>
   );
 };

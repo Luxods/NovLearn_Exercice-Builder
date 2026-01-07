@@ -1,21 +1,30 @@
 import React from 'react';
-import { MathText } from '../utils/mathRenderer';
+import MathText from '../utils/mathRenderer';
 
-const FunctionRenderer = ({ content, generatedValues }) => {
-  const functionText = content.name 
-    ? `$${content.name}(${content.variable || 'x'}) = ${content.expression}$`
-    : `$f(x) = ${content.expression}$`;
+const FunctionRenderer = ({ content, variables }) => {
+  const name = content.name || 'f';
+  // On construit la chaîne LaTeX complète : f(x) = expression
+  // Le MathText s'occupera de remplacer les @variables dans l'expression
+  const fullExpression = `$$ ${name}(x) = ${content.expression || ''} $$`;
 
   return (
-    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-      <div className="flex items-center gap-2">
-        <span className="text-xl">📈</span>
-        <MathText 
-          content={functionText} 
-          variables={generatedValues}
-          className="text-blue-900 font-medium text-lg"
-          requireBraces={false}  // PAS besoin de {}
+    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+      <div className="bg-blue-50/50 rounded-lg p-6 flex flex-col items-center justify-center gap-2 overflow-x-auto">
+        <MathText
+          content={fullExpression}
+          variables={variables}
+          className="text-xl text-gray-800"
+          displayMode={true}
         />
+        
+        {content.definitionSet && (
+          <div className="text-sm text-gray-500 mt-2">
+            <MathText 
+              content={`$x \\in ${content.definitionSet}$`} 
+              variables={variables}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
