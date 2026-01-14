@@ -83,10 +83,11 @@ export const useExercises = () => {
     }
   };
 
-  const loadExercise = (exercise) => {
+  const loadExercise = (exercise, preserveId = false) => {
     setCurrentExercise({
       ...exercise,
-      id: undefined // Retirer l'ID pour en créer un nouveau lors de la sauvegarde
+      // Si preserveId est vrai, on garde l'ID de la BDD, sinon on le vire pour créer une copie
+      id: preserveId ? exercise.id : undefined 
     });
   };
 

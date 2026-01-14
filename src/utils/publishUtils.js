@@ -1,45 +1,99 @@
 import { supabase } from '../supabaseClient';
 
-/**
- * Publie l'exercice dans la base de données Supabase
- * @param {Object} exercise - L'objet exercice complet
- */
+export const fetchExercisesList = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('id, title, chapter, difficulty, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error("Erreur fetch list:", err);
+    return { success: false, error: err.message };
+  }
+};
+
+export const fetchFullExercise = async (id) => {
+  try {
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    const formattedExercise = {
+      id: data.id,
+      title: data.title,
+      chapter: data.chapter,
+      difficulty: data.difficulty,
+      competences: data.competences || [],
+      ...data.content
+    };
+
+    return { success: true, data: formattedExercise };
+  } catch (err) {
+    console.error("Erreur fetch one:", err);
+    return { success: false, error: err.message };
+  }
+};
+
 export const publishExerciseToDB = async (exercise) => {
-  // 1. Validation basique
   if (!exercise.title || !exercise.chapter) {
     return { success: false, error: "Titre et Chapitre requis." };
   }
 
-  // 2. On SÉPARE les métadonnées du contenu pur
-  // On extrait (remove) title, chapter, difficulty, competences de l'objet 'content'
-  // Tout le reste (variables, elements...) va dans la variable 'contentOnly'
   const { 
-    id, // On retire l'ID s'il y en a un (c'est la BDD qui gère l'ID)
+    id, 
     title, 
     chapter, 
     difficulty, 
     competences, 
-    ...contentOnly // <-- C'est ici que sont variables et elements
+    ...contentOnly 
   } = exercise;
 
-  // 3. Préparation de la ligne SQL
   const dbRow = {
-    title: title,
-    chapter: chapter,
+    title,
+    chapter,
     difficulty: difficulty || 'Moyen',
     competences: competences || [],
-    content: contentOnly // Le JSONB ne contient plus de titre !
+    content: contentOnly
   };
 
   try {
-    const { data, error } = await supabase
-      .from('exercises')
-      .insert([dbRow])
-      .select();
+    let result;
+    
+    // CAS 1 : MISE À JOUR (UPDATE)
+    if (id) {
+      result = await supabase
+        .from('exercises')
+        .update(dbRow)
+        .eq('id', id)
+        .select();
+      
+      // --- C'EST ICI QUE LE FIX SE TROUVE ---
+      // Si la mise à jour ne renvoie aucune ligne (souvent un problème de droits)
+      if (!result.error && result.data && result.data.length === 0) {
+        return { 
+          success: false, 
+          error: "Mise à jour échouée. Vérifiez que la Policy RLS pour 'UPDATE' est active sur Supabase." 
+        };
+      }
+    } 
+    // CAS 2 : CRÉATION (INSERT)
+    else {
+      result = await supabase
+        .from('exercises')
+        .insert([dbRow])
+        .select();
+    }
 
-    if (error) throw error;
+    if (result.error) throw result.error;
 
-    return { success: true, data: data[0] };
+    return { success: true, data: result.data[0] };
   } catch (err) {
     console.error("Erreur Supabase:", err);
     return { success: false, error: err.message };

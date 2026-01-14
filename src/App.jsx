@@ -19,8 +19,9 @@ const App = () => {
     addElement,
     updateElement,
     deleteElement,
-    // saveExercise, // Plus besoin de cette fonction ici
-    // exportJSON,   // Plus besoin de l'exporter vers la Sidebar
+    loadExercise, // <--- AJOUT : On récupère la fonction pour charger un exercice
+    // saveExercise, 
+    // exportJSON,   
   } = useExercises();
 
   const {
@@ -40,6 +41,7 @@ const App = () => {
           hasVariables={currentExercise.variables.length > 0}
           onRegenerate={regenerateValues}
           currentExercise={currentExercise}
+          onLoadExercise={loadExercise} // <--- AJOUT : On la passe au Header
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
