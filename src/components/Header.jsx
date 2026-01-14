@@ -69,7 +69,7 @@ const Header = ({ previewMode, setPreviewMode, hasVariables, onRegenerate, curre
               className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition shadow-md
                 ${isPublishing 
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-green-600 hover:bg-green-700'}`} 
+                  : 'bg-green-500 hover:bg-green-700'}`} 
             >
               {isPublishing ? <RefreshCw className="animate-spin" size={18} /> : <CloudUpload size={18} />}
               {currentExercise.id ? 'Mettre à jour' : 'Publier'}

@@ -99,3 +99,19 @@ export const publishExerciseToDB = async (exercise) => {
     return { success: false, error: err.message };
   }
 };
+
+
+export const deleteExerciseFromDB = async (id) => {
+  try {
+    const { error } = await supabase
+      .from('exercises')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error("Erreur suppression:", err);
+    return { success: false, error: err.message };
+  }
+};
