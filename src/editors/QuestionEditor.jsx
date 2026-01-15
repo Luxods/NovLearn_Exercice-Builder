@@ -103,8 +103,7 @@ const QuestionEditor = ({ content, onUpdate }) => {
         </div>
 
         <p className="text-[10px] text-blue-600 mt-2">
-          Ecrivez @a pour calculer a. Les fonctions mathématiques de base sont
-          reconnues (sin, cos, ln, sqrt, etc.).
+          Ecrivez @a pour calculer a. Tout est en latex.
         </p>
       </div>
 
