@@ -6,6 +6,7 @@ export const useExercises = () => {
   const [exercises, setExercises] = useState([]);
   const [currentExercise, setCurrentExercise] = useState({
     title: '',
+    apptitle: '',
     difficulty: 'Facile',
     chapter: 'Analyse',
     competences: [],
@@ -56,6 +57,7 @@ export const useExercises = () => {
       const exerciseToSave = {
         id: Date.now(),
         title: currentExercise.title,
+        appTitle: currentExercise.appTitle || currentExercise.title, 
         chapter: currentExercise.chapter,
         difficulty: currentExercise.difficulty,
         competences: currentExercise.competences || [],

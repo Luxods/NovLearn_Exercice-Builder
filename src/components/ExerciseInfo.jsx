@@ -1,67 +1,72 @@
+// src/components/ExerciseInfo.jsx
 import React, { useState } from 'react';
 import { chapters, difficulties, COMPETENCES_BY_CHAPTER } from '../constants';
 import { ChevronDown, ChevronRight, Check, X } from 'lucide-react';
 
 const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
   const [showCompetences, setShowCompetences] = useState(false);
-  
-  // Obtenir les compétences du chapitre sélectionné
   const availableCompetences = COMPETENCES_BY_CHAPTER[currentExercise.chapter] || [];
   
-  // Gérer la sélection des compétences
+  // ... (Garder les fonctions toggleCompetence, clearCompetences, handleChapterChange telles quelles)
   const toggleCompetence = (competence) => {
     const currentCompetences = currentExercise.competences || [];
-    
     if (currentCompetences.includes(competence)) {
-      // Retirer la compétence
-      setCurrentExercise({
-        ...currentExercise,
-        competences: currentCompetences.filter(c => c !== competence)
-      });
+      setCurrentExercise({ ...currentExercise, competences: currentCompetences.filter(c => c !== competence) });
     } else {
-      // Ajouter la compétence
-      setCurrentExercise({
-        ...currentExercise,
-        competences: [...currentCompetences, competence]
-      });
+      setCurrentExercise({ ...currentExercise, competences: [...currentCompetences, competence] });
     }
   };
-  
-  // Supprimer toutes les compétences
+
   const clearCompetences = () => {
-    setCurrentExercise({
-      ...currentExercise,
-      competences: []
-    });
+    setCurrentExercise({ ...currentExercise, competences: [] });
   };
 
-  // Quand on change de chapitre, réinitialiser les compétences
   const handleChapterChange = (newChapter) => {
     setCurrentExercise({
       ...currentExercise,
       chapter: newChapter,
-      competences: [] // Réinitialiser car les compétences changent
+      competences: []
     });
   };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-800 border-b pb-2">📋 Informations</h2>
+      <h2 className="text-xl font-bold text-gray-800 border-b pb-2">📋 Informations Générales</h2>
       
-      {/* Titre */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Titre</label>
-        <input
-          type="text"
-          className="w-full p-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 outline-none"
-          value={currentExercise.title}
-          onChange={(e) => setCurrentExercise({...currentExercise, title: e.target.value})}
-          placeholder="Ex: Étude de fonction avec paramètre"
-        />
+      {/* DOUBLE INPUT POUR LES TITRES */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* 1. Nom Développeur (Interne) */}
+        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+            Nom de l'exercice (Interne)
+          </label>
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded focus:border-blue-500 outline-none text-sm"
+            value={currentExercise.title}
+            onChange={(e) => setCurrentExercise({...currentExercise, title: e.target.value})}
+            placeholder="Ex: Logarithme_Bac"
+          />
+        </div>
+
+        {/* 2. Titre Application (Élève) */}
+        <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+          <label className="block text-xs font-bold text-blue-600 uppercase mb-1">
+            Titre dans l'application (Élève)
+          </label>
+          <input
+            type="text"
+            className="w-full p-2 border border-blue-200 rounded focus:border-blue-500 outline-none text-sm"
+            value={currentExercise.appTitle || ''}
+            onChange={(e) => setCurrentExercise({...currentExercise, appTitle: e.target.value})}
+            placeholder="Ex: Étude de fonction logarithme"
+          />
+          <p className="text-[10px] text-blue-400 mt-1">C'est ce titre que l'élève verra en haut de la page</p>
+        </div>
       </div>
 
       {/* Chapitre, Difficulté */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1">Chapitre</label>
           <select
@@ -85,8 +90,7 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
         </div>
       </div>
 
-
-      {/* Compétences */}
+      {/* Compétences (Inchangé) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label className="block text-sm font-medium">

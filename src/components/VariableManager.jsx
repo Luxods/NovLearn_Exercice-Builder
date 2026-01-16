@@ -1,9 +1,29 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, AlertCircle, Calculator, ChevronDown, ChevronUp, Copy } from 'lucide-react';
-import { moduleHelpCategories } from '../utils/mathmodules'; // <--- IMPORT MIS A JOUR
+import { moduleHelpCategories } from '../utils/mathmodules';
 
 const VariableManager = ({ currentExercise, generatedValues, addVariable, updateVariable, deleteVariable }) => {
   const [showFuncHelp, setShowFuncHelp] = useState(false);
+
+  // Fonction pour gérer la saisie des nombres (permet "-" et les décimales)
+  const handleNumberChange = (id, field, value) => {
+    // 1. Si c'est vide ou juste un "-", on garde la chaîne pour permettre la frappe
+    if (value === '' || value === '-') {
+      updateVariable(id, { [field]: value });
+      return;
+    }
+
+    // 2. On essaie de convertir
+    const num = parseFloat(value);
+
+    // 3. Si c'est un nombre valide ET qu'il n'y a pas de formatage en cours (ex: "5." ou "0.0")
+    // On sauvegarde le Nombre (pour que les maths fonctionnent), sinon la chaîne.
+    if (!isNaN(num) && String(num) === value) {
+      updateVariable(id, { [field]: num });
+    } else {
+      updateVariable(id, { [field]: value });
+    }
+  };
 
   return (
     <div>
@@ -12,7 +32,7 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
         <div className="flex gap-2">
            <button
             onClick={() => setShowFuncHelp(!showFuncHelp)}
-            className={`flex items-center gap-1 px-3 py-1 border rounded-lg text-sm transition-colors font-medium ${showFuncHelp ? 'bg-blue-500 text-white border-blue-600 shadow-inner' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-6000'}`}
+            className={`flex items-center gap-1 px-3 py-1 border rounded-lg text-sm transition-colors font-medium ${showFuncHelp ? 'bg-blue-500 text-white border-blue-600 shadow-inner' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-600'}`}
           >
             <Calculator size={16} />
             {showFuncHelp ? 'Masquer Aide' : 'Fonctions'}
@@ -27,7 +47,7 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
         </div>
       </div>
 
-      {/* --- AIDE AUX FONCTIONS (Améliorée) --- */}
+      {/* --- AIDE AUX FONCTIONS --- */}
       {showFuncHelp && (
         <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-top-2">
           <div className="flex justify-between items-center mb-4">
@@ -52,7 +72,6 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                       title="Copier"
                       onClick={() => {
                         navigator.clipboard.writeText(fn.syntax);
-                        // Petit feedback visuel possible ici
                       }}
                     >
                       <div className="flex flex-col">
@@ -79,7 +98,7 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
         </div>
       )}
 
-      {/* --- LISTE DES VARIABLES (Code existant légèrement stylisé) --- */}
+      {/* --- LISTE DES VARIABLES --- */}
       {currentExercise.variables.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
           <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-500 mb-2">
@@ -139,11 +158,21 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                 <div className="flex gap-2 items-end mt-2">
                   <div className="flex-1">
                     <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 ml-1">Min</label>
-                    <input type="number" className="w-full p-1 border rounded bg-white text-sm" value={variable.min ?? ''} onChange={(e) => updateVariable(variable.id, { min: parseFloat(e.target.value) })} />
+                    <input 
+                      type="number" 
+                      className="w-full p-1 border rounded bg-white text-sm" 
+                      value={variable.min ?? ''} 
+                      onChange={(e) => handleNumberChange(variable.id, 'min', e.target.value)} 
+                    />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 ml-1">Max</label>
-                    <input type="number" className="w-full p-1 border rounded bg-white text-sm" value={variable.max ?? ''} onChange={(e) => updateVariable(variable.id, { max: parseFloat(e.target.value) })} />
+                    <input 
+                      type="number" 
+                      className="w-full p-1 border rounded bg-white text-sm" 
+                      value={variable.max ?? ''} 
+                      onChange={(e) => handleNumberChange(variable.id, 'max', e.target.value)} 
+                    />
                   </div>
                   <div className="flex-[1.5]">
                     <label className="text-[10px] font-bold text-red-400 uppercase mb-1 ml-1 flex items-center gap-1">
