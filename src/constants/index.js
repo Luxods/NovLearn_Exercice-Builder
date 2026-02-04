@@ -1,10 +1,10 @@
 export const chapters = [
-  "Suites_numériques",
-  "Limites_et_continuité",
+  "Suites numériques",
+  "Limites et continuité",
   "Fonctions",
   "Dérivabilité",
-  "Logarithme_néperien",
-  "Primitives_et_équadiff",
+  "Logarithme néperien",
+  "Primitives et équadiff",
   "Convexité",
   "Stats",
   "Probas",
@@ -13,7 +13,7 @@ export const chapters = [
 export const difficulties = ["Facile", "Moyen", "Difficile"];
 
 export const COMPETENCES_BY_CHAPTER = {
-  Limites_et_continuité: [
+  "Limites et continuité": [
     "Savoir si une fonction est continue",
     "Calculer une limite en un point",
     "Identifier une asymptote horizontale/verticale",
@@ -22,7 +22,7 @@ export const COMPETENCES_BY_CHAPTER = {
     "Déterminer des maximums et minimums",
   ],
 
-  Suites_numériques: [
+  "Suites numériques": [
     "Définir une suite",
     "Calculer des termes",
     "Étudier les variations (croissance/décroissance)",
