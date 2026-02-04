@@ -70,7 +70,7 @@ const QuestionEditor = ({ content, onUpdate }) => {
 
       {/* 3. SOLUTION SIMPLIFIÉE */}
       <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-        <label className="block text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
+        <label className="block text-sm font-bold text-blue-900 mb-2 items-center gap-2">
           Solution attendue
         </label>
 
