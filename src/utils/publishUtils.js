@@ -1,18 +1,31 @@
-import { supabase } from '../supabaseClient';
+// src/utils/publishUtils.js
+
+const API_URL = import.meta.env.VITE_NOVLEARN_API_URL;
+const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET;
+
+// Petit helper pour gérer les erreurs API proprement
+const handleApiResponse = async (response) => {
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error || "Erreur API inconnue");
+  }
+  return result;
+};
 
 /**
- * Récupère la liste simplifiée des exercices
- * AJOUT : On récupère aussi 'app_title' pour l'afficher éventuellement
+ * Récupère la liste simplifiée des exercices via l'API Novlearn
  */
 export const fetchExercisesList = async () => {
   try {
-    const { data, error } = await supabase
-      .from('exercises')
-      .select('id, title, app_title, chapter, difficulty, created_at') // <--- Ajout app_title
-      .order('created_at', { ascending: false });
+    const response = await fetch(API_URL, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    // L'API renvoie { success: true, exercises: [...] }
+    const result = await handleApiResponse(response);
+    return { success: true, data: result.exercises };
 
-    if (error) throw error;
-    return { success: true, data };
   } catch (err) {
     console.error("Erreur fetch list:", err);
     return { success: false, error: err.message };
@@ -20,31 +33,21 @@ export const fetchExercisesList = async () => {
 };
 
 /**
- * Récupère un exercice complet
+ * Récupère un exercice complet via l'API Novlearn
  */
 export const fetchFullExercise = async (id) => {
   try {
-    const { data, error } = await supabase
-      .from('exercises')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const response = await fetch(`${API_URL}?id=${id}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-    if (error) throw error;
+    // L'API renvoie { success: true, data: formattedExercise }
+    // Note : L'API fait déjà le formatage (appTitle, spread content...), 
+    // donc on récupère direct l'objet prêt à l'emploi.
+    const result = await handleApiResponse(response);
+    return { success: true, data: result.data };
 
-    const formattedExercise = {
-      id: data.id,
-      title: data.title,
-      // MAPPING : De la base (snake_case) vers l'app (camelCase)
-      // Si app_title est vide (vieux exos), on met le title par défaut
-      appTitle: data.app_title || data.title, 
-      chapter: data.chapter,
-      difficulty: data.difficulty,
-      competences: data.competences || [],
-      ...data.content // Le reste (variables, elements...)
-    };
-
-    return { success: true, data: formattedExercise };
   } catch (err) {
     console.error("Erreur fetch one:", err);
     return { success: false, error: err.message };
@@ -52,17 +55,20 @@ export const fetchFullExercise = async (id) => {
 };
 
 /**
- * Supprime un exercice
+ * Supprime un exercice via l'API (Nécessite le Secret)
  */
 export const deleteExerciseFromDB = async (id) => {
   try {
-    const { error } = await supabase
-      .from('exercises')
-      .delete()
-      .eq('id', id);
+    const response = await fetch(`${API_URL}?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        'x-admin-secret': ADMIN_SECRET // 🔐 Authentification machine
+      }
+    });
 
-    if (error) throw error;
+    await handleApiResponse(response);
     return { success: true };
+
   } catch (err) {
     console.error("Erreur suppression:", err);
     return { success: false, error: err.message };
@@ -70,14 +76,14 @@ export const deleteExerciseFromDB = async (id) => {
 };
 
 /**
- * Publie ou Met à jour l'exercice
+ * Publie ou Met à jour l'exercice via l'API (Nécessite le Secret)
  */
 export const publishExerciseToDB = async (exercise) => {
   if (!exercise.title || !exercise.chapter) {
     return { success: false, error: "Titre et Chapitre requis." };
   }
 
-  // On extrait appTitle pour le mettre dans sa propre colonne
+  // 1. Préparation des données (Identique à ton ancienne logique)
   const { 
     id, 
     title, 
@@ -88,48 +94,34 @@ export const publishExerciseToDB = async (exercise) => {
     ...contentOnly 
   } = exercise;
 
-  // Préparation de la ligne BDD
+  // On reconstruit l'objet tel qu'attendu par la table Supabase
   const dbRow = {
+    // Si on a un ID, on le met pour que l'API fasse un UPDATE, sinon ce sera un INSERT
+    ...(id && { id }), 
     title,
-    app_title: appTitle || title, // <--- Enregistrement dans la colonne dédiée
+    app_title: appTitle || title,
     chapter,
     difficulty: difficulty || 'Moyen',
     competences: competences || [],
-    content: contentOnly
+    content: contentOnly // Le JSON pur du contenu
   };
 
   try {
-    let result;
-    
-    // UPDATE
-    if (id) {
-      result = await supabase
-        .from('exercises')
-        .update(dbRow)
-        .eq('id', id)
-        .select();
-      
-      if (!result.error && result.data && result.data.length === 0) {
-        return { 
-          success: false, 
-          error: "Mise à jour refusée par Supabase. Vérifiez les droits." 
-        };
-      }
-    } 
-    // INSERT
-    else {
-      result = await supabase
-        .from('exercises')
-        .insert([dbRow])
-        .select();
-    }
+    // 2. Envoi à l'API (POST gère Upsert)
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-secret': ADMIN_SECRET // 🔐 Authentification machine
+      },
+      body: JSON.stringify(dbRow)
+    });
 
-    if (result.error) throw result.error;
-    if (!result.data || result.data.length === 0) throw new Error("Aucune donnée retournée.");
+    const result = await handleApiResponse(response);
+    return { success: true, data: result.data };
 
-    return { success: true, data: result.data[0] };
   } catch (err) {
-    console.error("Erreur Supabase:", err);
+    console.error("Erreur Publication API:", err);
     return { success: false, error: err.message };
   }
 };

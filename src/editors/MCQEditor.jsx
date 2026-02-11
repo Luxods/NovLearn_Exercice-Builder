@@ -38,8 +38,8 @@ const MCQEditor = ({ content, onUpdate }) => {
         <label className="flex items-center gap-2 text-xs">
           <input
             type="checkbox"
-            checked={content.multipleAnswers || false}
-            onChange={(e) => onUpdate({ ...content, multipleAnswers: e.target.checked })}
+            checked={content.multipleChoice || false}
+            onChange={(e) => onUpdate({ ...content, multipleChoice: e.target.checked })}
           />
           Plusieurs réponses possibles
         </label>
@@ -81,11 +81,11 @@ const MCQEditor = ({ content, onUpdate }) => {
               opt.correct ? 'bg-green-50 border-2 border-green-300' : 'bg-gray-50 border border-gray-200'
             }`}>
               <input
-                type={content.multipleAnswers ? "checkbox" : "radio"}
+                type={content.multipleChoice ? "checkbox" : "radio"}
                 name="correct-answer"
                 checked={opt.correct}
                 onChange={(e) => {
-                  if (!content.multipleAnswers) {
+                  if (!content.multipleChoice) {
                     // Radio : une seule bonne réponse
                     content.options.forEach((_, idx) => {
                       updateOption(idx, 'correct', idx === i);

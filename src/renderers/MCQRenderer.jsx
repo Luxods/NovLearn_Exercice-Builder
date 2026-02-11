@@ -8,7 +8,7 @@ const MCQRenderer = ({ content, generatedValues, element }) => {
   const handleAnswerToggle = (index) => {
     if (showResult) return; // Bloquer après validation
     
-    if (content.multipleAnswers) {
+    if (content.multipleChoice) {
       setSelectedAnswers(prev =>
         prev.includes(index)
           ? prev.filter(i => i !== index)
@@ -124,7 +124,7 @@ const MCQRenderer = ({ content, generatedValues, element }) => {
               className={getOptionClassName(option, index)}
             >
               <input
-                type={content.multipleAnswers ? "checkbox" : "radio"}
+                type={content.multipleChoice ? "checkbox" : "radio"}
                 name={`mcq-${element?.id || 'default'}`}
                 checked={selectedAnswers.includes(index)}
                 onChange={() => handleAnswerToggle(index)}
