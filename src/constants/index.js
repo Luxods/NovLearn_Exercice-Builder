@@ -1,8 +1,7 @@
 export const chapters = [
   "Suites numériques",
   "Limites et continuité",
-  "Fonctions",
-  "Dérivabilité",
+  "Dérivation et Fonctions",
   "Logarithme néperien",
   "Primitives et équadiff",
   "Convexité",
@@ -18,8 +17,8 @@ export const COMPETENCES_BY_CHAPTER = {
     "Calculer une limite en un point",
     "Identifier une asymptote horizontale/verticale",
     "Utiliser les limites usuelles",
-    "Dresser un tableau de signes et variations",
-    "Déterminer des maximums et minimums",
+    "Lire un tableau de signe ou de variation pour déterminer une limite",
+    "Exploiter la continuité d’une fonction",
   ],
 
   "Suites numériques": [
@@ -32,9 +31,13 @@ export const COMPETENCES_BY_CHAPTER = {
     "Interpréter graphiquement une suite",
   ],
 
-
-
-
+  "Dérivation et Fonctions": [
+    "Calculer une dérivée",
+    "Interpréter un taux de variation",
+    "Déterminer les extremums par le calcul",
+    "Dresser un tableau de signes/variations",
+    "Déterminer des extremums graphiquement",
+  ]
 
 };
 
