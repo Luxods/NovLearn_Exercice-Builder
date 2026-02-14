@@ -1,45 +1,59 @@
-import React from 'react';
-import { 
-  Info, Code
-} from 'lucide-react';
+import { Code, Info } from "lucide-react";
 
 const Sidebar = () => {
-  
   return (
     <aside className="w-80 bg-white border-r h-full flex flex-col shadow-lg z-20">
-
       <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-white custom-scrollbar">
-        
         {/* --- GUIDE MOTEUR --- */}
         <section className="bg-blue-50 rounded-lg border border-blue-100 p-3">
           <h3 className="font-bold text-blue-900 text-sm mb-3 flex items-center gap-2 border-b border-blue-200 pb-2">
             <Info size={16} /> Fonctionnement Moteur
           </h3>
-          
+
           <div className="space-y-3 text-xs text-blue-800">
             <div>
-              <span className="font-bold block mb-1">1. Variables Dynamiques</span>
-              <p className="opacity-80 mb-1">Définissez vos variables à droite (a, b...), puis utilisez <code className="bg-white px-1 border rounded">@</code> pour les insérer.</p>
+              <span className="font-bold block mb-1">
+                1. Variables Dynamiques
+              </span>
+              <p className="opacity-80 mb-1">
+                Définissez vos variables à droite (a, b...), puis utilisez{" "}
+                <code className="bg-white px-1 border rounded">@</code> pour les
+                insérer.
+              </p>
               <div className="bg-white p-2 rounded border border-blue-100 font-mono text-[10px]">
-                f(x) = @a x + @b
+                f(x) = @a * x + @b
               </div>
             </div>
 
             <div>
-              <span className="font-bold block mb-1">2. Simplification Auto</span>
+              <span className="font-bold block mb-1">
+                2. Simplification Auto
+              </span>
               <p className="opacity-80">Le moteur nettoie automatiquement :</p>
               <ul className="list-disc list-inside ml-1 mt-1 opacity-80 space-y-1">
-                <li><code className="bg-white px-1">1x</code> devient <code className="bg-white px-1">x</code></li>
-                <li><code className="bg-white px-1">0x</code> disparaît</li>
-                <li><code className="bg-white px-1">+ -5</code> devient <code className="bg-white px-1">- 5</code></li>
+                <li>
+                  <code className="bg-white px-1">1x</code> devient{" "}
+                  <code className="bg-white px-1">x</code>
+                </li>
+                <li>
+                  <code className="bg-white px-1">0x</code> disparaît
+                </li>
+                <li>
+                  <code className="bg-white px-1">+ -5</code> devient{" "}
+                  <code className="bg-white px-1">- 5</code>
+                </li>
               </ul>
             </div>
 
             <div>
-              <span className="font-bold block mb-1">3. Valeurs Interdites</span>
+              <span className="font-bold block mb-1">
+                3. Valeurs Interdites
+              </span>
               <p className="opacity-80">
-                Dans le manager de variables, utilisez le champ "Interdire" pour exclure des valeurs (ex: division par 0).
-                <br/>Syntaxe : <code className="bg-white px-1">0; -1; 5</code>
+                Dans le manager de variables, utilisez le champ "Interdire" pour
+                exclure des valeurs (ex: division par 0).
+                <br />
+                Syntaxe : <code className="bg-white px-1">0; -1; 5</code>
               </p>
             </div>
           </div>
@@ -51,19 +65,24 @@ const Sidebar = () => {
             <Code size={16} /> Dictionnaire LaTeX
           </h3>
           <p className="text-[10px] text-gray-500 mb-3">
-            Entourez toujours de <code>$</code> pour le texte et <code>$$</code> pour centrer.
+            Entourez toujours de <code>$</code> pour le texte et <code>$$</code>{" "}
+            pour centrer.
+          </p>
+          <p className="text-[10px] text-gray-500 mb-3">
+            Pas besoin de mettre de <code>\text</code>. Attention à
+            l'utilisation des fonctions de variables qui se simplifie. Mettez
+            les crochets pour les intervalles et les ; entre les solutions
+            d'équations.
           </p>
 
           <div className="space-y-4">
-            
             {/* 1. Opérations */}
             <LatexCategory title="Opérations & Écriture">
               <LatexItem code="\frac{a}{b}" label="Fraction" />
               <LatexItem code="\sqrt{x}" label="Racine" />
               <LatexItem code="x^{n}" label="Puissance" />
               <LatexItem code="u_{n}" label="Indice" />
-              <LatexItem code="\times" label="Fois (x)" />
-              <LatexItem code="\div" label="Divisé" />
+              <LatexItem code="*" label="Fois (x)" />
             </LatexCategory>
 
             {/* 2. Ensembles */}
@@ -97,8 +116,8 @@ const Sidebar = () => {
               <LatexItem code="\widehat{ABC}" label="Angle" />
             </LatexCategory>
 
-             {/* 5. Fonctions */}
-             <LatexCategory title="Fonctions">
+            {/* 5. Fonctions */}
+            <LatexCategory title="Fonctions">
               <LatexItem code="f(x)" label="Fonction" />
               <LatexItem code="\sin(x)" label="Sinus" />
               <LatexItem code="\cos(x)" label="Cosinus" />
@@ -108,8 +127,8 @@ const Sidebar = () => {
               <LatexItem code="\int_{a}^{b}" label="Intégrale" />
             </LatexCategory>
 
-             {/* 6. Grec */}
-             <LatexCategory title="Lettres Grecques">
+            {/* 6. Grec */}
+            <LatexCategory title="Lettres Grecques">
               <LatexItem code="\alpha" label="Alpha" />
               <LatexItem code="\beta" label="Beta" />
               <LatexItem code="\Delta" label="Delta" />
@@ -117,10 +136,8 @@ const Sidebar = () => {
               <LatexItem code="\theta" label="Theta" />
               <LatexItem code="\Sigma" label="Somme" />
             </LatexCategory>
-
           </div>
         </section>
-
       </div>
     </aside>
   );
@@ -129,15 +146,18 @@ const Sidebar = () => {
 // Petits composants internes pour organiser le code
 const LatexCategory = ({ title, children }) => (
   <div>
-    <h4 className="font-bold text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">{title}</h4>
-    <div className="grid grid-cols-1 gap-1">
-      {children}
-    </div>
+    <h4 className="font-bold text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">
+      {title}
+    </h4>
+    <div className="grid grid-cols-1 gap-1">{children}</div>
   </div>
 );
 
 const LatexItem = ({ code, label }) => (
-  <div className="flex items-center justify-between bg-white px-2 py-1.5 rounded border border-gray-100 text-xs hover:border-blue-300 group cursor-pointer" title="Cliquez pour copier (à implémenter)">
+  <div
+    className="flex items-center justify-between bg-white px-2 py-1.5 rounded border border-gray-100 text-xs hover:border-blue-300 group cursor-pointer"
+    title="Cliquez pour copier (à implémenter)"
+  >
     <span className="text-gray-500">{label}</span>
     <code className="font-mono text-purple-700 bg-purple-50 px-1 rounded text-[10px] group-hover:bg-purple-100 select-all">
       {code}

@@ -74,7 +74,7 @@ const ElementList = ({ currentExercise, setCurrentExercise, updateElement, delet
             <button
               key={et.type}
               onClick={() => addElement(et.type)}
-              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-linear-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition text-sm"
             >
               <span>{et.icon}</span>
               <span>{et.label}</span>
