@@ -1,27 +1,34 @@
-import React, { useState, useRef } from 'react';
-import { Trash2, GripVertical } from 'lucide-react';
-import { elementTypes } from '../constants';
-import ElementEditor from '../editors/ElementEditor';
+import { GripVertical, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { elementTypes } from "../constants";
+import ElementEditor from "../editors/ElementEditor";
 
-const ElementList = ({ currentExercise, setCurrentExercise, updateElement, deleteElement, addElement }) => {
+const ElementList = ({
+  currentExercise,
+  setCurrentExercise,
+  updateElement,
+  deleteElement,
+  addElement,
+}) => {
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
 
-  const filteredElementTypes = elementTypes.filter(et => 
-    et.chapters === 'all' || et.chapters.includes(currentExercise.chapter)
+  const filteredElementTypes = elementTypes.filter(
+    (et) =>
+      et.chapters === "all" || et.chapters.includes(currentExercise.chapter),
   );
 
   const handleDragStart = (e, index) => {
     dragItem.current = index;
     setDraggedIndex(index);
     setIsDragging(true);
-    
+
     // Créer une image de drag personnalisée
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', e.target.innerHTML);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/html", e.target.innerHTML);
   };
 
   const handleDragEnter = (e, index) => {
@@ -31,22 +38,26 @@ const ElementList = ({ currentExercise, setCurrentExercise, updateElement, delet
 
   const handleDragEnd = () => {
     // Réorganiser les éléments
-    if (dragItem.current !== null && dragOverItem.current !== null && dragItem.current !== dragOverItem.current) {
+    if (
+      dragItem.current !== null &&
+      dragOverItem.current !== null &&
+      dragItem.current !== dragOverItem.current
+    ) {
       const draggedElement = currentExercise.elements[dragItem.current];
       const newElements = [...currentExercise.elements];
-      
+
       // Supprimer l'élément de sa position actuelle
       newElements.splice(dragItem.current, 1);
-      
+
       // L'insérer à la nouvelle position
       newElements.splice(dragOverItem.current, 0, draggedElement);
-      
+
       setCurrentExercise({
         ...currentExercise,
-        elements: newElements
+        elements: newElements,
       });
     }
-    
+
     // Réinitialiser
     dragItem.current = null;
     dragOverItem.current = null;
@@ -68,13 +79,15 @@ const ElementList = ({ currentExercise, setCurrentExercise, updateElement, delet
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Ajouter un élément</label>
+        <label className="block text-sm font-medium mb-2">
+          Ajouter un élément
+        </label>
         <div className="flex flex-wrap gap-2">
-          {filteredElementTypes.map(et => (
+          {filteredElementTypes.map((et) => (
             <button
               key={et.type}
               onClick={() => addElement(et.type)}
-              className="flex items-center gap-2 px-3 py-2 bg-linear-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition text-sm"
             >
               <span>{et.icon}</span>
               <span>{et.label}</span>
@@ -99,16 +112,17 @@ const ElementList = ({ currentExercise, setCurrentExercise, updateElement, delet
               onDragOver={handleDragOver}
               className={`
                 border-2 rounded-lg p-4 bg-gray-50 transition-all
-                ${dragOverIndex === index && draggedIndex !== index ? 'border-blue-400 bg-blue-50 translate-y-1' : 'border-gray-200'}
-                ${draggedIndex === index ? 'opacity-50' : 'opacity-100'}
+                ${dragOverIndex === index && draggedIndex !== index ? "border-blue-400 bg-blue-50 translate-y-1" : "border-gray-200"}
+                ${draggedIndex === index ? "opacity-50" : "opacity-100"}
               `}
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="font-medium text-gray-700 select-none">
-                  {elementTypes.find(et => et.type === element.type)?.icon}{' '}
-                  {elementTypes.find(et => et.type === element.type)?.label} #{index + 1}
+                  {elementTypes.find((et) => et.type === element.type)?.icon}{" "}
+                  {elementTypes.find((et) => et.type === element.type)?.label} #
+                  {index + 1}
                 </span>
-                
+
                 <div className="flex items-center gap-2">
                   {/* Bouton pour glisser */}
                   {currentExercise.elements.length > 1 && (
@@ -127,7 +141,7 @@ const ElementList = ({ currentExercise, setCurrentExercise, updateElement, delet
                       <GripVertical size={18} />
                     </div>
                   )}
-                  
+
                   {/* Bouton supprimer */}
                   <button
                     onClick={() => deleteElement(element.id)}
@@ -138,11 +152,8 @@ const ElementList = ({ currentExercise, setCurrentExercise, updateElement, delet
                   </button>
                 </div>
               </div>
-              
-              <ElementEditor
-                element={element}
-                updateElement={updateElement}
-              />
+
+              <ElementEditor element={element} updateElement={updateElement} />
             </div>
           ))}
         </div>
