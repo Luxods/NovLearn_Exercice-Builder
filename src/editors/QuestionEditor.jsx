@@ -48,7 +48,7 @@ const QuestionEditor = ({ content, onUpdate }) => {
           >
             <option value="number">Nombre (Ex: 4.5)</option>
             <option value="equation">Ensemble (Ex: -1; 3)</option>
-            <option value="interval">Intervalle (Ex: ]-inf; 5])</option>
+            <option value="interval">Intervalle (Ex: ]-\infty; 5])</option>
             <option value="expression">Formule (Ex: 2x+1)</option>
             <option value="text">Texte libre</option>
           </select>
@@ -92,8 +92,8 @@ const QuestionEditor = ({ content, onUpdate }) => {
               safeContent.answerFormat === "equation"
                 ? "@x1; @x2"
                 : safeContent.answerFormat === "interval"
-                ? "]-inf; 2]"
-                : "Valeur..."
+                  ? "]-\infty; 2]"
+                  : "Valeur..."
             }
           />
 
@@ -103,7 +103,8 @@ const QuestionEditor = ({ content, onUpdate }) => {
         </div>
 
         <p className="text-[10px] text-blue-600 mt-2">
-          Ecrivez @a pour calculer a. Tout est en latex.
+          Ecrivez @a pour calculer a. Tout est en latex sauf le * pour la
+          multiplication. Pas besoin de $ dans la réponse.
         </p>
       </div>
 

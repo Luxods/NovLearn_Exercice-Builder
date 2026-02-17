@@ -30,7 +30,7 @@ const MCQEditor = ({ content, onUpdate }) => {
           rows="2"
           value={content.question}
           onChange={(e) => onUpdate({ ...content, question: e.target.value })}
-          placeholder="Question du QCM. Utilisez {a}, {b} pour les variables"
+          placeholder="Question du QCM. Utilisez @a, @b pour les variables"
         />
       </div>
 
@@ -100,7 +100,7 @@ const MCQEditor = ({ content, onUpdate }) => {
                 className="flex-1 p-1 border rounded text-sm"
                 value={opt.text}
                 onChange={(e) => updateOption(i, 'text', e.target.value)}
-                placeholder={`Option ${i + 1} (utilisez {a}, {b} pour les variables)`}
+                placeholder={`Option ${i + 1} (utilisez @a, @b pour les variables)`}
               />
               {opt.correct && (
                 <span className="text-green-600 text-sm font-bold">✓</span>

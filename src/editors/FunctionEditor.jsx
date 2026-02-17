@@ -55,7 +55,7 @@ const FunctionEditor = ({ content, onUpdate }) => {
             className="flex-1 p-2 border rounded font-mono" 
             value={safeContent.expression}
             onChange={(e) => updateContent('expression', e.target.value)}
-            placeholder="Ex: @a x^2 + @b"
+            placeholder="Ex: @a*x^2 + @b"
           />
         </div>
         
