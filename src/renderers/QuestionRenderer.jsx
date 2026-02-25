@@ -15,7 +15,7 @@ const QuestionRenderer = ({ content, variables }) => {
   // 1. Préfixe pour l'élève (S=, x appartient...)
   const getPrefix = () => {
     switch (answerFormat) {
-      case 'equation': return 'S =';
+      case 'set': return 'S =';
       case 'interval': return 'x \\in';
       case 'expression': return ''; 
       default: return '';
@@ -25,7 +25,7 @@ const QuestionRenderer = ({ content, variables }) => {
   // 2. Placeholder intelligent
   const getPlaceholder = () => {
     switch (answerFormat) {
-      case 'equation': return '{ ... }'; 
+      case 'set': return '{ ... }'; 
       case 'interval': return '] ... ; ... [';
       case 'expression': return 'f\'(x)...';
       default: return 'Votre réponse...';
@@ -42,11 +42,11 @@ const QuestionRenderer = ({ content, variables }) => {
     sol = sol.replace(/\binf\b/g, '\\infty');
     sol = sol.replace(/\bU\b/g, '\\cup');
 
-    if (answerFormat === 'equation') {
-        if (!sol.includes('\\emptyset') && !sol.trim().startsWith('\\{')) {
-            sol = `\\{ ${sol} \\}`;
-        }
+  if (answerFormat === 'set') {
+    if (!sol.includes('\\emptyset') && !sol.trim().startsWith('\\{')) {
+      sol = `\\{ ${sol} \\}`;
     }
+  }
 
     return sol;
   };
@@ -62,7 +62,7 @@ const QuestionRenderer = ({ content, variables }) => {
           {/* Affichage de l'indice s'il existe */}
           {hint && (
             <div className="mt-2 text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 p-2 rounded-lg flex items-start gap-2">
-                <Lightbulb size={16} className="mt-0.5 flex-shrink-0" />
+                <Lightbulb size={16} className="mt-0.5 shrink-0" />
                 <div>
                     <span className="font-bold text-xs uppercase block mb-1">Indice :</span>
                     <MathText content={hint} variables={variables} />
@@ -70,7 +70,7 @@ const QuestionRenderer = ({ content, variables }) => {
             </div>
           )}
         </div>
-        <div className="flex-shrink-0 ml-4 px-2 py-1 bg-gray-100 rounded text-xs font-bold text-gray-500">
+        <div className="shrink-0 ml-4 px-2 py-1 bg-gray-100 rounded text-xs font-bold text-gray-500">
           {points} pt{points > 1 ? 's' : ''}
         </div>
       </div>

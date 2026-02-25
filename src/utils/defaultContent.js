@@ -77,7 +77,7 @@ export const defaultContent = {
 
   question: {
     question: "Résoudre l'équation :",
-    answerFormat: "equation", // 'number', 'expression', 'equation', 'interval', 'text'
+    answerFormat: "set", // 'number', 'expression', 'equation', 'interval', 'text'
     correctAnswer: "@x1; @x2", 
     points: 1
   },

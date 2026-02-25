@@ -47,7 +47,7 @@ const QuestionEditor = ({ content, onUpdate }) => {
             onChange={(e) => update("answerFormat", e.target.value)}
           >
             <option value="number">Nombre (Ex: 4.5)</option>
-            <option value="equation">Ensemble (Ex: -1; 3)</option>
+            <option value="set">Ensemble (Ex: -1; 3)</option>
             <option value="interval">Intervalle (Ex: ]-\infty; 5])</option>
             <option value="expression">Formule (Ex: 2x+1)</option>
             <option value="text">Texte libre</option>
@@ -76,7 +76,7 @@ const QuestionEditor = ({ content, onUpdate }) => {
 
         {/* CHAMP INPUT AVEC PRÉFIXE VISUEL */}
         <div className="flex items-center gap-2">
-          {safeContent.answerFormat === "equation" && (
+          {safeContent.answerFormat === "set" && (
             <span className="font-bold text-blue-800 text-lg">S = {"{"}</span>
           )}
           {safeContent.answerFormat === "interval" && (
@@ -89,7 +89,7 @@ const QuestionEditor = ({ content, onUpdate }) => {
             value={safeContent.correctAnswer || ""}
             onChange={(e) => update("correctAnswer", e.target.value)}
             placeholder={
-              safeContent.answerFormat === "equation"
+              safeContent.answerFormat === "set"
                 ? "@x1; @x2"
                 : safeContent.answerFormat === "interval"
                   ? "]-\infty; 2]"
@@ -97,7 +97,7 @@ const QuestionEditor = ({ content, onUpdate }) => {
             }
           />
 
-          {safeContent.answerFormat === "equation" && (
+          {safeContent.answerFormat === "set" && (
             <span className="font-bold text-blue-800 text-lg">{"}"}</span>
           )}
         </div>
