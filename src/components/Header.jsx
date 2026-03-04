@@ -1,31 +1,46 @@
-import React, { useState } from 'react';
-import { Eye, Code, RefreshCw, CloudUpload, Download } from 'lucide-react';
-import { publishExerciseToDB } from '../utils/publishUtils';
-import { exportToJSON } from '../utils/exportUtils';
-import ImportModal from './ImportModal'; 
+import {
+  BookOpen,
+  CloudUpload,
+  Code,
+  Download,
+  Eye,
+  RefreshCw,
+} from "lucide-react";
+import { useState } from "react";
+import { publishExerciseToDB } from "../utils/publishUtils";
+import ImportModal from "./ImportModal";
 
-const Header = ({ previewMode, setPreviewMode, hasVariables, onRegenerate, currentExercise, onLoadExercise }) => {
+const Header = ({
+  previewMode,
+  setPreviewMode,
+  hasVariables,
+  onRegenerate,
+  currentExercise,
+  onLoadExercise,
+  onOpenTaxonomy,
+}) => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
   const handlePublishAndSave = async () => {
     const isUpdate = !!currentExercise.id;
     const action = isUpdate ? "METTRE À JOUR" : "PUBLIER";
-    
+
     if (!confirm(`Voulez-vous ${action} cet exercice sur Supabase ?`)) return;
-    
+
     setIsPublishing(true);
 
     const result = await publishExerciseToDB(currentExercise);
 
     if (result.success) {
       // exportToJSON(currentExercise, true, true); // (Optionnel : téléchargement local)
-      
-      alert(`✅ Exercice sauvegardé avec succès ! (ID: ${result.data.id})\nLa page va maintenant se recharger pour un nouvel exercice.`);
-      
+
+      alert(
+        `✅ Exercice sauvegardé avec succès ! (ID: ${result.data.id})\nLa page va maintenant se recharger pour un nouvel exercice.`,
+      );
+
       // --- MODIFICATION ICI : On recharge la page ---
-      window.location.reload(); 
-      
+      window.location.reload();
     } else {
       alert(`❌ Erreur : ${result.error}`);
       setIsPublishing(false); // On ne désactive le chargement qu'en cas d'erreur
@@ -49,9 +64,8 @@ const Header = ({ previewMode, setPreviewMode, hasVariables, onRegenerate, curre
               <p className="text-gray-600">Nouveau projet</p>
             )}
           </div>
-          
+
           <div className="flex gap-2">
-            
             {/* BOUTON IMPORTER */}
             <button
               onClick={() => setShowImportModal(true)}
@@ -61,30 +75,45 @@ const Header = ({ previewMode, setPreviewMode, hasVariables, onRegenerate, curre
               Charger
             </button>
 
+            {/* BOUTON GESTION TAXONOMIE */}
+            <button
+              onClick={onOpenTaxonomy}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border border-gray-300"
+            >
+              <BookOpen size={18} />
+              Taxonomie
+            </button>
+
             <div className="h-full w-px bg-gray-300 mx-2"></div>
 
             <button
               onClick={handlePublishAndSave}
               disabled={isPublishing}
               className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition shadow-md
-                ${isPublishing 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-green-500 hover:bg-green-700'}`} 
+                ${
+                  isPublishing
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-700"
+                }`}
             >
-              {isPublishing ? <RefreshCw className="animate-spin" size={18} /> : <CloudUpload size={18} />}
-              {currentExercise.id ? 'Mettre à jour' : 'Publier'}
+              {isPublishing ? (
+                <RefreshCw className="animate-spin" size={18} />
+              ) : (
+                <CloudUpload size={18} />
+              )}
+              {currentExercise.id ? "Mettre à jour" : "Publier"}
             </button>
 
-             <div className="h-full w-px bg-gray-300 mx-2"></div>
+            <div className="h-full w-px bg-gray-300 mx-2"></div>
 
-             <button
+            <button
               onClick={() => setPreviewMode(!previewMode)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
             >
               {previewMode ? <Code size={18} /> : <Eye size={18} />}
-              {previewMode ? 'Éditer' : 'Aperçu'}
+              {previewMode ? "Éditer" : "Aperçu"}
             </button>
-            
+
             {previewMode && hasVariables && (
               <button
                 onClick={onRegenerate}
@@ -94,15 +123,14 @@ const Header = ({ previewMode, setPreviewMode, hasVariables, onRegenerate, curre
                 Régénérer
               </button>
             )}
-
           </div>
         </div>
       </div>
 
       {showImportModal && (
-        <ImportModal 
-          onClose={() => setShowImportModal(false)} 
-          onLoadExercise={onLoadExercise} 
+        <ImportModal
+          onClose={() => setShowImportModal(false)}
+          onLoadExercise={onLoadExercise}
         />
       )}
     </>

@@ -1,4 +1,4 @@
-﻿import { supabase } from '../supabaseClient';
+﻿import { supabase } from "../supabaseClient";
 
 // ------------------------------------------------------------------
 // Cache en mémoire (RAM) – TTL : 1 heure
@@ -6,6 +6,11 @@
 const CACHE_TTL = 1000 * 60 * 60;
 let taxonomyCache = null;
 let lastFetchTime = 0;
+
+export const invalidateTaxonomyCache = () => {
+  taxonomyCache = null;
+  lastFetchTime = 0;
+};
 
 async function getTaxonomy() {
   if (taxonomyCache && Date.now() - lastFetchTime < CACHE_TTL) {
@@ -16,8 +21,8 @@ async function getTaxonomy() {
     { data: chaptersData, error: chaptersError },
     { data: competencesData, error: competencesError },
   ] = await Promise.all([
-    supabase.from('chapters').select('*').order('order_index'),
-    supabase.from('competences').select('id, name, chapter_id, chapters(name)'),
+    supabase.from("chapters").select("*").order("order_index"),
+    supabase.from("competences").select("id, name, chapter_id, chapters(name)"),
   ]);
 
   if (chaptersError) throw chaptersError;
@@ -31,7 +36,10 @@ async function getTaxonomy() {
   }
   for (const comp of competencesData) {
     const chName = comp.chapters?.name;
-    if (chName && Object.prototype.hasOwnProperty.call(competencesByChapter, chName)) {
+    if (
+      chName &&
+      Object.prototype.hasOwnProperty.call(competencesByChapter, chName)
+    ) {
       competencesByChapter[chName].push(comp.name);
     }
   }
