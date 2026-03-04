@@ -1,59 +1,72 @@
-export const chapters = [
-  "Suites numériques",
-  "Limites et continuité",
-  "Dérivation et Fonctions",
-  "Logarithme néperien",
-  "Primitives et équadiff",
-  "Convexité",
-  "Stats",
-  "Probas",
-];
+﻿import { supabase } from '../supabaseClient';
 
+// ------------------------------------------------------------------
+// Cache en mémoire (RAM) – TTL : 1 heure
+// ------------------------------------------------------------------
+const CACHE_TTL = 1000 * 60 * 60;
+let taxonomyCache = null;
+let lastFetchTime = 0;
+
+async function getTaxonomy() {
+  if (taxonomyCache && Date.now() - lastFetchTime < CACHE_TTL) {
+    return taxonomyCache;
+  }
+
+  const [
+    { data: chaptersData, error: chaptersError },
+    { data: competencesData, error: competencesError },
+  ] = await Promise.all([
+    supabase.from('chapters').select('*').order('order_index'),
+    supabase.from('competences').select('id, name, chapter_id, chapters(name)'),
+  ]);
+
+  if (chaptersError) throw chaptersError;
+  if (competencesError) throw competencesError;
+
+  const chaptersList = chaptersData.map((ch) => ch.name);
+
+  const competencesByChapter = {};
+  for (const ch of chaptersData) {
+    competencesByChapter[ch.name] = [];
+  }
+  for (const comp of competencesData) {
+    const chName = comp.chapters?.name;
+    if (chName && Object.prototype.hasOwnProperty.call(competencesByChapter, chName)) {
+      competencesByChapter[chName].push(comp.name);
+    }
+  }
+
+  const allCompetences = competencesData.map((c) => c.name);
+
+  taxonomyCache = { chaptersList, competencesByChapter, allCompetences };
+  lastFetchTime = Date.now();
+  return taxonomyCache;
+}
+
+// ------------------------------------------------------------------
+// API publique asynchrone
+// ------------------------------------------------------------------
 export const difficulties = ["Facile", "Moyen", "Difficile"];
 
-export const COMPETENCES_BY_CHAPTER = {
-  "Limites et continuité": [
-    "Savoir si une fonction est continue",
-    "Calculer une limite en un point",
-    "Identifier une asymptote horizontale/verticale",
-    "Utiliser les limites usuelles",
-    "Lire un tableau de signe ou de variation pour déterminer une limite",
-    "Exploiter la continuité d’une fonction",
-  ],
-
-  "Suites numériques": [
-    "Définir une suite",
-    "Calculer des termes",
-    "Étudier les variations (croissance/décroissance)",
-    "Déterminer une limite",
-    "Reconnaître des suites arithmétiques/géométriques",
-    "Modéliser une situation par une suite",
-    "Interpréter graphiquement une suite",
-  ],
-
-  "Dérivation et Fonctions": [
-    "Calculer une dérivée",
-    "Interpréter un taux de variation",
-    "Déterminer les extremums par le calcul",
-    "Dresser un tableau de signes/variations",
-    "Déterminer des extremums graphiquement",
-  ]
-
+export const getChapters = async () => {
+  const { chaptersList } = await getTaxonomy();
+  return chaptersList;
 };
 
-export const getCompetencesByChapter = (chapter) => {
-  return COMPETENCES_BY_CHAPTER[chapter] || [];
+export const getCompetencesByChapter = async (chapter) => {
+  const { competencesByChapter } = await getTaxonomy();
+  return competencesByChapter[chapter] ?? [];
 };
 
-export const getAllCompetences = () => {
-  return Object.values(COMPETENCES_BY_CHAPTER).flat();
+export const getAllCompetences = async () => {
+  const { allCompetences } = await getTaxonomy();
+  return allCompetences;
 };
 
-export const searchCompetences = (searchTerm) => {
+export const searchCompetences = async (searchTerm) => {
   const term = searchTerm.toLowerCase();
-  return getAllCompetences().filter((comp) =>
-    comp.toLowerCase().includes(term),
-  );
+  const all = await getAllCompetences();
+  return all.filter((comp) => comp.toLowerCase().includes(term));
 };
 
 export const elementTypes = [

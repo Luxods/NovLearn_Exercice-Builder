@@ -1,13 +1,29 @@
-// src/components/ExerciseInfo.jsx
-import React, { useState } from 'react';
-import { chapters, difficulties, COMPETENCES_BY_CHAPTER } from '../constants';
+﻿// src/components/ExerciseInfo.jsx
+import React, { useState, useEffect } from 'react';
+import { getChapters, getCompetencesByChapter, difficulties } from '../constants';
 import { ChevronDown, ChevronRight, Check, X } from 'lucide-react';
 
 const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
   const [showCompetences, setShowCompetences] = useState(false);
-  const availableCompetences = COMPETENCES_BY_CHAPTER[currentExercise.chapter] || [];
-  
-  // ... (Garder les fonctions toggleCompetence, clearCompetences, handleChapterChange telles quelles)
+  const [chaptersList, setChaptersList] = useState([]);
+  const [availableCompetences, setAvailableCompetences] = useState([]);
+
+  // Chargement initial de la liste des chapitres
+  useEffect(() => {
+    getChapters().then(setChaptersList).catch(console.error);
+  }, []);
+
+  // Rechargement des compétences quand le chapitre change
+  useEffect(() => {
+    if (currentExercise.chapter) {
+      getCompetencesByChapter(currentExercise.chapter)
+        .then(setAvailableCompetences)
+        .catch(console.error);
+    } else {
+      setAvailableCompetences([]);
+    }
+  }, [currentExercise.chapter]);
+
   const toggleCompetence = (competence) => {
     const currentCompetences = currentExercise.competences || [];
     if (currentCompetences.includes(competence)) {
@@ -74,7 +90,7 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
             value={currentExercise.chapter}
             onChange={(e) => handleChapterChange(e.target.value)}
           >
-            {chapters.map(ch => <option key={ch}>{ch}</option>)}
+            {chaptersList.map(ch => <option key={ch}>{ch}</option>)}
           </select>
         </div>
 
