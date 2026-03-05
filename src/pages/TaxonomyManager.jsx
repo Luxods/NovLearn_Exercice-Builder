@@ -267,6 +267,19 @@ const S = {
 };
 
 /* ─────────────────────────────────────────────
+   Génère un ID lisible (slug) à partir d'un nom
+───────────────────────────────────────────── */
+function generateCompetenceId(name) {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
+/* ─────────────────────────────────────────────
    Composant principal
 ───────────────────────────────────────────── */
 const TaxonomyManager = ({ onClose }) => {
@@ -396,9 +409,10 @@ const TaxonomyManager = ({ onClose }) => {
   const saveNewCompetence = async (chapterId) => {
     const name = newCompetenceName.trim();
     if (!name) return;
+    const id = generateCompetenceId(name);
     const { error: err } = await supabase
       .from("competences")
-      .insert({ name, chapter_id: chapterId });
+      .insert({ id, name, chapter_id: chapterId });
     if (err) {
       alert(`Erreur : ${err.message}`);
       return;
@@ -451,7 +465,7 @@ const TaxonomyManager = ({ onClose }) => {
               Retour
             </button>
             <div>
-              <h1 style={S.title}>📚 Gestion de la Taxonomie</h1>
+              <h1 style={S.title}>📚 Gestion des Chapitres et Compétences</h1>
               <p style={S.subtitle}>Chapitres et compétences associées</p>
             </div>
           </div>

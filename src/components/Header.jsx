@@ -81,7 +81,7 @@ const Header = ({
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border border-gray-300"
             >
               <BookOpen size={18} />
-              Taxonomie
+              Chapitres & Compétences
             </button>
 
             <div className="h-full w-px bg-gray-300 mx-2"></div>

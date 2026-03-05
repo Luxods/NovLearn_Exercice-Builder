@@ -21,9 +21,7 @@ const App = () => {
     addElement,
     updateElement,
     deleteElement,
-    loadExercise, // <--- AJOUT : On récupère la fonction pour charger un exercice
-    // saveExercise,
-    // exportJSON,
+    loadExercise,
   } = useExercises();
 
   const {
