@@ -1,85 +1,84 @@
 import React from 'react';
-import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 const VariationTableEditor = ({ content, onUpdate }) => {
   const safeContent = {
     headers: ["x", "f(x)"],
-    columns: [],
+    points: content?.points || [
+      { x: "-\\infty", y: "+\\infty", pos: "top" },
+      { x: "0", y: "0", pos: "bottom" },
+      { x: "+\\infty", y: "+\\infty", pos: "top" }
+    ],
     ...content
   };
 
-  const addColumn = () => {
-    onUpdate({
-      ...safeContent,
-      columns: [...safeContent.columns, { x: "", val: "", variation: "" }]
-    });
+  const updatePoint = (index, field, value) => {
+    const newPoints = [...safeContent.points];
+    newPoints[index] = { ...newPoints[index], [field]: value };
+    onUpdate({ ...safeContent, points: newPoints });
   };
 
-  const updateColumn = (index, field, value) => {
-    const newCols = [...safeContent.columns];
-    newCols[index] = { ...newCols[index], [field]: value };
-    onUpdate({ ...safeContent, columns: newCols });
+  const addPoint = () => {
+    const newPoints = [...safeContent.points];
+    const last = newPoints.pop();
+    newPoints.push({ x: "", y: "", pos: "center" });
+    newPoints.push(last);
+    onUpdate({ ...safeContent, points: newPoints });
   };
 
-  const removeColumn = (index) => {
-    onUpdate({
-      ...safeContent,
-      columns: safeContent.columns.filter((_, i) => i !== index)
-    });
+  const removePoint = (index) => {
+    onUpdate({ ...safeContent, points: safeContent.points.filter((_, i) => i !== index) });
   };
 
   return (
     <div className="space-y-4">
-      <div className="text-sm font-medium text-gray-700">Points du tableau</div>
-      
+      <div className="flex gap-4 mb-4">
+        <div className="w-1/2">
+          <label className="block text-[10px] text-gray-500 font-bold uppercase mb-1">Titre Ligne 1</label>
+          <input className="w-full p-1.5 border rounded text-sm font-mono" value={safeContent.headers[0]} onChange={e => onUpdate({ ...safeContent, headers: [e.target.value, safeContent.headers[1]] })} />
+        </div>
+        <div className="w-1/2">
+          <label className="block text-[10px] text-gray-500 font-bold uppercase mb-1">Titre Ligne 2</label>
+          <input className="w-full p-1.5 border rounded text-sm font-mono" value={safeContent.headers[1]} onChange={e => onUpdate({ ...safeContent, headers: [safeContent.headers[0], e.target.value] })} />
+        </div>
+      </div>
+
       <div className="space-y-2">
-        {safeContent.columns.map((col, idx) => (
-          <div key={idx} className="flex gap-2 items-center bg-gray-50 p-2 rounded border">
-            {/* X */}
+        {safeContent.points.map((pt, idx) => (
+          <div key={idx} className="flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200">
             <div className="w-1/4">
-              <label className="text-[10px] uppercase text-gray-500">X</label>
-              <input 
-                className="w-full p-1 border rounded text-sm font-mono"
-                value={col.x} 
-                onChange={e => updateColumn(idx, 'x', e.target.value)}
-                placeholder="-∞"
-              />
+              <label className="text-[10px] uppercase text-gray-500 font-bold">Valeur x</label>
+              <input className="w-full p-1.5 border rounded text-sm font-mono" value={pt.x} onChange={e => updatePoint(idx, 'x', e.target.value)} placeholder="@x1" />
             </div>
 
-            {/* Variation */}
             <div className="w-1/4">
-              <label className="text-[10px] uppercase text-gray-500">Sens</label>
-              <select 
-                className="w-full p-1 border rounded text-sm"
-                value={col.variation} 
-                onChange={e => updateColumn(idx, 'variation', e.target.value)}
-              >
-                <option value="">Normal</option>
-                <option value="high">Sommet (Haut)</option>
-                <option value="low">Creux (Bas)</option>
+              <label className="text-[10px] uppercase text-gray-500 font-bold">Valeur f(x)</label>
+              <input className="w-full p-1.5 border rounded text-sm font-mono" value={pt.y} onChange={e => updatePoint(idx, 'y', e.target.value)} placeholder="0" disabled={pt.pos === 'forbidden'} />
+            </div>
+
+            <div className="w-1/3">
+              <label className="text-[10px] uppercase text-gray-500 font-bold">Position Verticale</label>
+              <select className="w-full p-1.5 border rounded text-sm bg-white" value={pt.pos} onChange={e => updatePoint(idx, 'pos', e.target.value)}>
+                <option value="top">Haut (Max / +∞)</option>
+                <option value="bottom">Bas (Min / -∞)</option>
+                <option value="center">Milieu</option>
+                <option value="forbidden">Valeur Interdite (||)</option>
               </select>
             </div>
 
-            {/* Valeur f(x) */}
-            <div className="w-1/4">
-              <label className="text-[10px] uppercase text-gray-500">f(x)</label>
-              <input 
-                className="w-full p-1 border rounded text-sm font-mono"
-                value={col.val} 
-                onChange={e => updateColumn(idx, 'val', e.target.value)}
-                placeholder="0"
-              />
+            <div className="w-8 flex justify-center mt-4">
+              {safeContent.points.length > 2 && (
+                <button onClick={() => removePoint(idx)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded">
+                  <Trash2 size={16} />
+                </button>
+              )}
             </div>
-
-            <button onClick={() => removeColumn(idx)} className="text-red-400 hover:text-red-600">
-              <Trash2 size={16} />
-            </button>
           </div>
         ))}
       </div>
 
-      <button onClick={addColumn} className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
-        <Plus size={14} /> Ajouter un point
+      <button onClick={addPoint} className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800">
+        <Plus size={16} /> Ajouter un point
       </button>
     </div>
   );

@@ -37,25 +37,25 @@ export const defaultContent = {
 
   variationTable: {
     headers: ["x", "f(x)"],
-    columns: [
-      { x: "-∞", variation: "" },
-      { x: "@a", variation: "high" },
-      { x: "+∞", variation: "" },
+    points: [
+      { x: "-\\infty", y: "+\\infty", pos: "top" },
+      { x: "@a", y: "0", pos: "bottom" },
+      { x: "+\\infty", y: "+\\infty", pos: "top" },
     ],
   },
 
   signTable: {
     headers: ["x", "f(x)"],
-    intervals: [
-      { val: "-∞", sign: "+" },
-      { val: "@x1", sign: "0" },
-      { val: "+∞", sign: "-" },
+    points: [
+      { x: "-\\infty", type: "boundary", signAfter: "+" },
+      { x: "@x1", type: "zero", signAfter: "-" },
+      { x: "+\\infty", type: "boundary", signAfter: null },
     ],
   },
 
   probaTree: {
     levels: 2,
-    nodes: [], 
+    nodes: [],
   },
 
   vector: {
@@ -78,8 +78,8 @@ export const defaultContent = {
   question: {
     question: "Résoudre l'équation :",
     answerFormat: "set", // 'number', 'expression', 'equation', 'interval', 'text'
-    correctAnswer: "@x1; @x2", 
-    points: 1
+    correctAnswer: "@x1; @x2",
+    points: 1,
   },
 };
 

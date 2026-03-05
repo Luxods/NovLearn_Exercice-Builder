@@ -1,48 +1,59 @@
-import React from 'react';
-import MathText from '../utils/mathRenderer';
+import React from "react";
+import MathText from "../utils/mathRenderer";
 
 const SignTableRenderer = ({ content, variables }) => {
   const headers = content.headers || ["x", "f(x)"];
-  const intervals = content.intervals || [];
+  const points = content.points || [];
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
-      <table className="w-full border-collapse border border-gray-800">
+    <div className="w-full overflow-x-auto my-2">
+      <table className="border-collapse border-2 border-gray-800 text-sm md:text-base mx-auto">
         <tbody>
-          {/* Ligne X */}
-          <tr className="border-b border-gray-800">
-            <td className="w-16 p-2 border-r border-gray-800 text-center bg-gray-50 font-bold">
-               <MathText content={`$${headers[0]}$`} variables={variables} />
+          {/* LIGNE DES X */}
+          <tr className="border-b-2 border-gray-800">
+            <td className="px-3 py-2 border-r-2 border-gray-800 bg-gray-50 font-bold text-center min-w-[56px]">
+              <MathText content={`$${headers[0]}$`} variables={variables} />
             </td>
-            {intervals.map((item, i) => (
-              <td key={i} className="p-2 text-center relative min-w-[60px]">
-                 {/* Si ce n'est pas le dernier, on affiche la borne */}
-                 <MathText content={`$${item.val}$`} variables={variables} />
-              </td>
+            {points.map((pt, i) => (
+              <React.Fragment key={`x-${i}`}>
+                <td
+                  className={`px-4 py-2 text-center min-w-[40px]${i > 0 ? " border-l-2 border-gray-800" : ""}`}
+                >
+                  <MathText content={`$${pt.x}$`} variables={variables} />
+                </td>
+                {i < points.length - 1 && (
+                  <td className="min-w-[60px] md:min-w-[80px]" />
+                )}
+              </React.Fragment>
             ))}
           </tr>
-          {/* Ligne Signes */}
+
+          {/* LIGNE DES SIGNES */}
           <tr>
-            <td className="p-2 border-r border-gray-800 text-center bg-gray-50 font-bold">
-               <MathText content={`$${headers[1]}$`} variables={variables} />
+            <td className="px-3 py-2 border-r-2 border-gray-800 bg-gray-50 font-bold text-center">
+              <MathText content={`$${headers[1]}$`} variables={variables} />
             </td>
-            {intervals.map((item, i) => (
-              <td key={i} className="p-2 text-center relative border-l border-dashed border-gray-300 first:border-l-0">
-                {/* Logique d'affichage des signes et zéros */}
-                {item.sign === '0' ? (
-                   <div className="relative inline-block w-full">
-                     <div className="absolute top-0 bottom-0 left-1/2 w-px bg-black -translate-x-1/2 h-full -mt-2 -mb-2"></div>
-                     <span className="relative z-10 bg-white px-1">0</span>
-                   </div>
-                ) : item.sign === 'z' ? (
-                   <div className="h-full w-full flex justify-center gap-1">
-                     <div className="w-px bg-black h-8"></div>
-                     <div className="w-px bg-black h-8"></div>
-                   </div>
-                ) : (
-                   <span className="font-bold text-lg">{item.sign}</span>
+            {points.map((pt, i) => (
+              <React.Fragment key={`sign-${i}`}>
+                <td
+                  className={`py-3 h-10 text-center${i > 0 ? " border-l-2 border-gray-800" : ""}`}
+                >
+                  {pt.type === "zero" && (
+                    <span className="font-bold text-gray-800">0</span>
+                  )}
+                  {pt.type === "forbidden" && (
+                    <span className="inline-flex gap-[3px]">
+                      <span className="block w-[3px] h-6 bg-gray-800 rounded-sm" />
+                      <span className="block w-[3px] h-6 bg-gray-800 rounded-sm" />
+                    </span>
+                  )}
+                </td>
+                {i < points.length - 1 && (
+                  <td className="py-3 text-center font-bold text-xl text-gray-800">
+                    {pt.signAfter ?? pt.signNext}
+                  </td>
                 )}
-              </td>
+              </React.Fragment>
             ))}
           </tr>
         </tbody>
@@ -50,4 +61,5 @@ const SignTableRenderer = ({ content, variables }) => {
     </div>
   );
 };
+
 export default SignTableRenderer;
