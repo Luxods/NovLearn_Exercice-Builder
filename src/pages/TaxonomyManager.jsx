@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { invalidateTaxonomyCache } from "../constants";
 import { supabase } from "../supabaseClient";
+import { supabaseAdmin } from "../supabaseAdmin"; // Ajoute cette ligne !
 
 /* ─────────────────────────────────────────────
    Styles utilitaires (inline) pour éviter de
@@ -307,8 +308,8 @@ const TaxonomyManager = ({ onClose }) => {
     try {
       const [{ data: chaps, error: e1 }, { data: comps, error: e2 }] =
         await Promise.all([
-          supabase.from("chapters").select("*").order("order_index"),
-          supabase.from("competences").select("*").order("name"),
+          supabaseAdmin.from("chapters").select("*").order("order_index"),
+          supabaseAdmin.from("competences").select("*").order("name"),
         ]);
       if (e1) throw e1;
       if (e2) throw e2;
@@ -344,7 +345,7 @@ const TaxonomyManager = ({ onClose }) => {
       (m, c) => Math.max(m, c.order_index ?? 0),
       0,
     );
-    const { error: err } = await supabase
+    const { error: err } = await supabaseAdmin
       .from("chapters")
       .insert({ name, order_index: maxOrder + 1 });
     if (err) {
@@ -359,7 +360,7 @@ const TaxonomyManager = ({ onClose }) => {
   const saveEditChapter = async (id) => {
     const name = editingChapterName.trim();
     if (!name) return;
-    const { error: err } = await supabase
+    const { error: err } = await supabaseAdmin
       .from("chapters")
       .update({ name })
       .eq("id", id);
@@ -374,8 +375,8 @@ const TaxonomyManager = ({ onClose }) => {
   const deleteChapter = async (id, name) => {
     if (!confirm(`Supprimer le chapitre "${name}" et toutes ses compétences ?`))
       return;
-    await supabase.from("competences").delete().eq("chapter_id", id);
-    const { error: err } = await supabase
+    await supabaseAdmin.from("competences").delete().eq("chapter_id", id);
+    const { error: err } = await supabaseAdmin
       .from("chapters")
       .delete()
       .eq("id", id);
@@ -393,11 +394,11 @@ const TaxonomyManager = ({ onClose }) => {
     const a = chapters[idx];
     const b = chapters[swapIdx];
     await Promise.all([
-      supabase
+      supabaseAdmin
         .from("chapters")
         .update({ order_index: b.order_index })
         .eq("id", a.id),
-      supabase
+      supabaseAdmin
         .from("chapters")
         .update({ order_index: a.order_index })
         .eq("id", b.id),
@@ -410,7 +411,7 @@ const TaxonomyManager = ({ onClose }) => {
     const name = newCompetenceName.trim();
     if (!name) return;
     const id = generateCompetenceId(name);
-    const { error: err } = await supabase
+    const { error: err } = await supabaseAdmin
       .from("competences")
       .insert({ id, name, chapter_id: chapterId });
     if (err) {
@@ -425,7 +426,7 @@ const TaxonomyManager = ({ onClose }) => {
   const saveEditCompetence = async (id) => {
     const name = editingCompetenceName.trim();
     if (!name) return;
-    const { error: err } = await supabase
+    const { error: err } = await supabaseAdmin
       .from("competences")
       .update({ name })
       .eq("id", id);
@@ -439,7 +440,7 @@ const TaxonomyManager = ({ onClose }) => {
 
   const deleteCompetence = async (id, name) => {
     if (!confirm(`Supprimer la compétence "${name}" ?`)) return;
-    const { error: err } = await supabase
+    const { error: err } = await supabaseAdmin
       .from("competences")
       .delete()
       .eq("id", id);
