@@ -79,7 +79,6 @@ export const searchCompetences = async (searchTerm) => {
 
 export const elementTypes = [
   { type: "text", label: "Texte/Énoncé", icon: "📝", chapters: "all" },
-  { type: "function", label: "Fonction", icon: "📈", chapters: "all" },
   { type: "graph", label: "Graphe", icon: "📊", chapters: "all" },
   {
     type: "variationTable",
@@ -94,7 +93,6 @@ export const elementTypes = [
     icon: "🌳",
     chapters: "all",
   },
-  { type: "sequence", label: "Suite", icon: "🔢", chapters: "all" },
   {
     type: "discreteGraph",
     label: "Graphe Discret",

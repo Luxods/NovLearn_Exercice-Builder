@@ -1,19 +1,15 @@
-import React from 'react';
-import TextEditor from './TextEditor';
-import FunctionEditor from './FunctionEditor';
-import GraphEditor from './GraphEditor';
-import VariationTableEditor from './VariationTableEditor';
-import SignTableEditor from './SignTableEditor';
-import SequenceEditor from './SequenceEditor';
-import ComplexPlaneEditor from './ComplexPlaneEditor';
-import VectorEditor from './VectorEditor';
-import StatsTableEditor from './StatsTableEditor';
-import EquationEditor from './EquationEditor';
-import QuestionEditor from './QuestionEditor';
-import MCQEditor from './MCQEditor';
-import { ProbaTreeEditor } from './ProbaTreeEditor';
-import DiscreteGraphEditor from './DiscreteGraphEditor';
-
+import ComplexPlaneEditor from "./ComplexPlaneEditor";
+import DiscreteGraphEditor from "./DiscreteGraphEditor";
+import EquationEditor from "./EquationEditor";
+import GraphEditor from "./GraphEditor";
+import MCQEditor from "./MCQEditor";
+import { ProbaTreeEditor } from "./ProbaTreeEditor";
+import QuestionEditor from "./QuestionEditor";
+import SignTableEditor from "./SignTableEditor";
+import StatsTableEditor from "./StatsTableEditor";
+import TextEditor from "./TextEditor";
+import VariationTableEditor from "./VariationTableEditor";
+import VectorEditor from "./VectorEditor";
 
 const ElementEditor = ({ element, updateElement }) => {
   const { type, content, id } = element;
@@ -22,34 +18,30 @@ const ElementEditor = ({ element, updateElement }) => {
     updateElement(id, updatedContent);
   };
 
-  switch(type) {
-    case 'text':
+  switch (type) {
+    case "text":
       return <TextEditor content={content} onUpdate={handleUpdate} />;
-    case 'function':
-      return <FunctionEditor content={content} onUpdate={handleUpdate} />;
-    case 'graph':
+    case "graph":
       return <GraphEditor content={content} onUpdate={handleUpdate} />;
-    case 'variationTable':
+    case "variationTable":
       return <VariationTableEditor content={content} onUpdate={handleUpdate} />;
-    case 'signTable':
+    case "signTable":
       return <SignTableEditor content={content} onUpdate={handleUpdate} />;
-    case 'probaTree':
+    case "probaTree":
       return <ProbaTreeEditor content={content} onUpdate={handleUpdate} />;
-    case 'sequence':
-      return <SequenceEditor content={content} onUpdate={handleUpdate} />;
-    case 'discreteGraph':
+    case "discreteGraph":
       return <DiscreteGraphEditor content={content} onUpdate={handleUpdate} />;
-    case 'complexPlane':
+    case "complexPlane":
       return <ComplexPlaneEditor content={content} onUpdate={handleUpdate} />;
-    case 'vector':
+    case "vector":
       return <VectorEditor content={content} onUpdate={handleUpdate} />;
-    case 'statsTable':
+    case "statsTable":
       return <StatsTableEditor content={content} onUpdate={handleUpdate} />;
-    case 'equation':
+    case "equation":
       return <EquationEditor content={content} onUpdate={handleUpdate} />;
-    case 'question':
+    case "question":
       return <QuestionEditor content={content} onUpdate={handleUpdate} />;
-    case 'mcq':
+    case "mcq":
       return <MCQEditor content={content} onUpdate={handleUpdate} />;
     default:
       return <p className="text-gray-400">Éditeur non disponible</p>;

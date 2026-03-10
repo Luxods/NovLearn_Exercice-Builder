@@ -1,46 +1,38 @@
-import React from 'react';
-import FunctionRenderer from './FunctionRenderer';
-import EquationRenderer from './EquationRenderer';
-import GraphRenderer from './GraphRenderer';
-import TextRenderer from './TextRenderer';
-import SequenceRenderer from './SequenceRenderer';
-import QuestionRenderer from './QuestionRenderer';
-import SignTableRenderer from './SignTableRenderer';
-import VariationTableRenderer from './VariationTableRenderer';
-import StatsTableRenderer from './StatsTableRenderer';
-import ProbaTreeRenderer from './ProbaTreeRenderer';
-import VectorRenderer from './VectorRenderer';
-import MCQRenderer from './MCQRenderer';
-import ElementRendererComponent from '../editors/ElementEditor'; // Fallback si besoin
+import EquationRenderer from "./EquationRenderer";
+import GraphRenderer from "./GraphRenderer";
+import MCQRenderer from "./MCQRenderer";
+import ProbaTreeRenderer from "./ProbaTreeRenderer";
+import QuestionRenderer from "./QuestionRenderer";
+import SignTableRenderer from "./SignTableRenderer";
+import StatsTableRenderer from "./StatsTableRenderer";
+import TextRenderer from "./TextRenderer";
+import VariationTableRenderer from "./VariationTableRenderer";
+import VectorRenderer from "./VectorRenderer";
 
 const ElementRenderer = ({ element, variables }) => {
   const { type, content } = element;
 
   // On passe systématiquement 'variables' à tous les renderers
   switch (type) {
-    case 'text':
+    case "text":
       return <TextRenderer content={content} variables={variables} />;
-    case 'function':
-      return <FunctionRenderer content={content} variables={variables} />;
-    case 'equation':
+    case "equation":
       return <EquationRenderer content={content} variables={variables} />;
-    case 'graph':
+    case "graph":
       return <GraphRenderer content={content} variables={variables} />;
-    case 'sequence':
-      return <SequenceRenderer content={content} variables={variables} />;
-    case 'question':
+    case "question":
       return <QuestionRenderer content={content} variables={variables} />;
-    case 'signTable':
+    case "signTable":
       return <SignTableRenderer content={content} variables={variables} />;
-    case 'variationTable':
+    case "variationTable":
       return <VariationTableRenderer content={content} variables={variables} />;
-    case 'statsTable':
+    case "statsTable":
       return <StatsTableRenderer content={content} variables={variables} />;
-    case 'probaTree':
+    case "probaTree":
       return <ProbaTreeRenderer content={content} variables={variables} />;
-    case 'vector':
+    case "vector":
       return <VectorRenderer content={content} variables={variables} />;
-    case 'mcq':
+    case "mcq":
       return <MCQRenderer content={content} variables={variables} />;
     default:
       console.warn(`Type d'élément non supporté dans le rendu : ${type}`);

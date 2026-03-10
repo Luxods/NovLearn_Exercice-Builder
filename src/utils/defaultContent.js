@@ -7,12 +7,6 @@ export const defaultContent = {
     text: "Soit une fonction $f$ définie sur @I...",
   },
 
-  function: {
-    name: "f",
-    expression: "@a x^2 + @b", // Plus de sin(x) pour simplifier le défaut
-    definitionSet: "\\mathbb{R}",
-  },
-
   graph: {
     functions: [{ expression: "x^2", color: "#2563eb" }],
     xMin: -5,
@@ -26,13 +20,6 @@ export const defaultContent = {
     type: "simple",
     latex: "@a x + @b = 0",
     requireAnswer: false,
-  },
-
-  sequence: {
-    name: "u",
-    type: "explicit",
-    expression: "@a n + @b",
-    firstTermIndex: "0",
   },
 
   variationTable: {
