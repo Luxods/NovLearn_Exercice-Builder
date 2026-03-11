@@ -23,7 +23,8 @@ export const defaultContent = {
   },
 
   variationTable: {
-    headers: ["x", "f(x)"],
+    variable: "x",
+    function: "f(x)",
     points: [
       { x: "-\\infty", y: "+\\infty", pos: "top" },
       { x: "@a", y: "0", pos: "bottom" },
@@ -32,12 +33,14 @@ export const defaultContent = {
   },
 
   signTable: {
-    headers: ["x", "f(x)"],
+    variable: "x",
+    function: "f(x)",
     points: [
-      { x: "-\\infty", type: "boundary", signAfter: "+" },
-      { x: "@x1", type: "zero", signAfter: "-" },
-      { x: "+\\infty", type: "boundary", signAfter: null },
+      { x: "-\\infty", type: "boundary" },
+      { x: "@x_1", type: "zero" },
+      { x: "+\\infty", type: "boundary" },
     ],
+    signs: ["+", "-"],
   },
 
   probaTree: {

@@ -84,25 +84,29 @@ export const publishExerciseToDB = async (exercise) => {
   }
 
   // 1. Préparation des données (Identique à ton ancienne logique)
-  const { 
-    id, 
-    title, 
-    appTitle, 
-    chapter, 
-    difficulty, 
-    competences, 
-    ...contentOnly 
+  const {
+    id,
+    title,
+    appTitle,
+    chapter,
+    difficulty,
+    competences,
+    Is_Flash,
+    Need_Calculator,
+    ...contentOnly
   } = exercise;
 
   // On reconstruit l'objet tel qu'attendu par la table Supabase
   const dbRow = {
     // Si on a un ID, on le met pour que l'API fasse un UPDATE, sinon ce sera un INSERT
-    ...(id && { id }), 
+    ...(id && { id }),
     title,
     app_title: appTitle || title,
     chapter,
     difficulty: difficulty || 'Moyen',
     competences: competences || [],
+    Is_Flash: Is_Flash ?? false,
+    Need_Calculator: Need_Calculator ?? false,
     content: contentOnly // Le JSON pur du contenu
   };
 

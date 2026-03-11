@@ -1,7 +1,7 @@
 ﻿// src/components/ExerciseInfo.jsx
 import React, { useState, useEffect } from 'react';
 import { getChapters, getCompetencesByChapter, difficulties } from '../constants';
-import { ChevronDown, ChevronRight, Check, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check, X, Zap, Calculator } from 'lucide-react';
 
 const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
   const [showCompetences, setShowCompetences] = useState(false);
@@ -79,6 +79,45 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
           />
           <p className="text-[10px] text-blue-400 mt-1">C'est ce titre que l'élève verra en haut de la page</p>
         </div>
+      </div>
+
+      {/* TOGGLES : Flash Exos & Calculatrice */}
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={() => setCurrentExercise({ ...currentExercise, Is_Flash: !currentExercise.Is_Flash })}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 text-sm font-bold transition-all shadow-sm ${
+            currentExercise.Is_Flash
+              ? 'bg-yellow-400 border-yellow-500 text-yellow-900 shadow-yellow-200'
+              : 'bg-white border-dashed border-gray-300 text-gray-400 line-through'
+          }`}
+        >
+          <Zap size={16} className={currentExercise.Is_Flash ? 'fill-yellow-700' : ''} />
+          Flash Exos
+          {currentExercise.Is_Flash ? (
+            <Check size={14} className="ml-1 text-yellow-700" />
+          ) : (
+            <X size={14} className="ml-1" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setCurrentExercise({ ...currentExercise, Need_Calculator: !currentExercise.Need_Calculator })}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 text-sm font-bold transition-all shadow-sm ${
+            currentExercise.Need_Calculator
+              ? 'bg-green-400 border-green-500 text-green-900 shadow-green-200'
+              : 'bg-white border-dashed border-gray-300 text-gray-400 line-through'
+          }`}
+        >
+          <Calculator size={16} />
+          Calculatrice
+          {currentExercise.Need_Calculator ? (
+            <Check size={14} className="ml-1 text-green-700" />
+          ) : (
+            <X size={14} className="ml-1" />
+          )}
+        </button>
       </div>
 
       {/* Chapitre, Difficulté */}
