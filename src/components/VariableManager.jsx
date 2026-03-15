@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, AlertCircle, Calculator, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { moduleHelpCategories } from '../utils/mathmodules';
 
-const VariableManager = ({ currentExercise, generatedValues, addVariable, updateVariable, deleteVariable }) => {
+const VariableManager = ({ currentExercise, generatedValues, addVariable, addDoublet, addTriplet, updateVariable, deleteVariable }) => {
   const [showFuncHelp, setShowFuncHelp] = useState(false);
 
   // Fonction pour gérer la saisie des nombres (permet "-" et les décimales)
@@ -43,6 +43,20 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
           >
             <Plus size={16} />
             Variable
+          </button>
+          <button
+            onClick={addDoublet}
+            className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium shadow-sm"
+          >
+            <Plus size={16} />
+            Doublet
+          </button>
+          <button
+            onClick={addTriplet}
+            className="flex items-center gap-1 px-3 py-1 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm font-medium shadow-sm"
+          >
+            <Plus size={16} />
+            Triplet
           </button>
         </div>
       </div>
@@ -109,9 +123,109 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
         </div>
       ) : (
         <div className="space-y-3">
-          {currentExercise.variables.map((variable) => (
+          {currentExercise.variables.map((variable) => {
+            // --- Rendu Doublet / Triplet ---
+            if (variable.type === 'doublet' || variable.type === 'triplet') {
+              const isDoublet = variable.type === 'doublet';
+              const names = variable.names || (isDoublet ? ['a', 'b'] : ['A', 'B', 'C']);
+              const borderColor = isDoublet ? 'border-green-200' : 'border-orange-200';
+              const badgeBg = isDoublet ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
+              const hintMap = {
+                perfect_square: 'A=p², B=2pq, C=q²  →  $@Ax^2 + @Bx + @C$',
+              };
+              const hint = hintMap[variable.mode];
+
+              return (
+                <div key={variable.id} className={`border ${borderColor} rounded-lg p-3 bg-gray-50/50 hover:bg-white hover:shadow-md transition-all`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${badgeBg}`}>
+                      {isDoublet ? '[2] Doublet' : '[3] Triplet'}
+                    </span>
+                    {names.map((name, i) => (
+                      <div key={i} className="relative">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">@</span>
+                        <input
+                          type="text"
+                          className="w-14 pl-5 pr-1 py-1 border rounded text-sm font-bold bg-white focus:ring-2 focus:ring-green-200 outline-none"
+                          value={name}
+                          placeholder={isDoublet ? ['a','b'][i] : ['A','B','C'][i]}
+                          onChange={(e) => {
+                            const newNames = [...names];
+                            newNames[i] = e.target.value;
+                            updateVariable(variable.id, { names: newNames });
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <select
+                      className="p-1 py-1.5 border rounded text-sm bg-white focus:ring-2 outline-none cursor-pointer ml-1"
+                      value={variable.mode}
+                      onChange={(e) => updateVariable(variable.id, { mode: e.target.value })}
+                    >
+                      <option value="choice">Au choix</option>
+                      {!isDoublet && <option value="perfect_square">Carré parfait</option>}
+                    </select>
+                    <button
+                      onClick={() => deleteVariable(variable.id)}
+                      className="ml-auto p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+
+                  {variable.mode === 'choice' ? (
+                    <div className="mt-1">
+                      <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 ml-1">
+                        {isDoublet ? 'Paires possibles (séparées par ;)' : 'Triplets possibles (séparés par ;)'}
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-1 border rounded bg-white text-sm font-mono"
+                        placeholder={isDoublet ? '(1,2); (-1,3); (2,5)' : '(1,-2,1); (4,4,1); (1,0,-1)'}
+                        value={variable.choices || ''}
+                        onChange={(e) => updateVariable(variable.id, { choices: e.target.value })}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex gap-2 items-end mt-1">
+                        <div className="flex-1">
+                          <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 ml-1">Min</label>
+                          <input type="number" className="w-full p-1 border rounded bg-white text-sm" value={variable.min ?? ''} onChange={(e) => handleNumberChange(variable.id, 'min', e.target.value)} />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 ml-1">Max</label>
+                          <input type="number" className="w-full p-1 border rounded bg-white text-sm" value={variable.max ?? ''} onChange={(e) => handleNumberChange(variable.id, 'max', e.target.value)} />
+                        </div>
+                        <div className="flex-[1.5]">
+                          <label className="text-[10px] font-bold text-red-400 uppercase mb-1 ml-1 flex items-center gap-1">Interdire <AlertCircle size={10} /></label>
+                          <input type="text" className="w-full p-1 border border-red-200 rounded bg-white text-sm placeholder-red-100" placeholder="0" value={variable.exclusions || ''} onChange={(e) => updateVariable(variable.id, { exclusions: e.target.value })} />
+                        </div>
+                      </div>
+                      {hint && (
+                        <div className="mt-2 text-[10px] text-gray-400 font-mono bg-gray-100 rounded px-2 py-1">{hint}</div>
+                      )}
+                    </div>
+                  )}
+
+                  {names.some(name => name && generatedValues[name.trim()] !== undefined) && (
+                    <div className="mt-3 flex flex-wrap gap-2 bg-white rounded border border-gray-100 px-2 py-1">
+                      {names.map(name => name && generatedValues[name.trim()] !== undefined && (
+                        <div key={name} className="flex items-center gap-1">
+                          <span className="text-xs text-gray-400">@{name.trim()} =</span>
+                          <span className="text-sm font-mono font-bold text-purple-600 bg-purple-50 px-2 rounded">{generatedValues[name.trim()]}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // --- Rendu variable simple (existant) ---
+            return (
             <div key={variable.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 hover:bg-white hover:shadow-md transition-all group">
-              
+
               <div className="flex items-center gap-2 mb-2">
                 <div className="relative">
                   <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">@</span>
@@ -158,20 +272,20 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                 <div className="flex gap-2 items-end mt-2">
                   <div className="flex-1">
                     <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 ml-1">Min</label>
-                    <input 
-                      type="number" 
-                      className="w-full p-1 border rounded bg-white text-sm" 
-                      value={variable.min ?? ''} 
-                      onChange={(e) => handleNumberChange(variable.id, 'min', e.target.value)} 
+                    <input
+                      type="number"
+                      className="w-full p-1 border rounded bg-white text-sm"
+                      value={variable.min ?? ''}
+                      onChange={(e) => handleNumberChange(variable.id, 'min', e.target.value)}
                     />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 ml-1">Max</label>
-                    <input 
-                      type="number" 
-                      className="w-full p-1 border rounded bg-white text-sm" 
-                      value={variable.max ?? ''} 
-                      onChange={(e) => handleNumberChange(variable.id, 'max', e.target.value)} 
+                    <input
+                      type="number"
+                      className="w-full p-1 border rounded bg-white text-sm"
+                      value={variable.max ?? ''}
+                      onChange={(e) => handleNumberChange(variable.id, 'max', e.target.value)}
                     />
                   </div>
                   <div className="flex-[1.5]">
@@ -195,13 +309,13 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                     className="w-full p-1 border rounded bg-white text-sm"
                     placeholder="sin,cos,tan"
                     value={variable.choices ? variable.choices.join(',') : ''}
-                    onChange={(e) => updateVariable(variable.id, { 
-                        choices: e.target.value.split(',').map(s => s.trim()) 
+                    onChange={(e) => updateVariable(variable.id, {
+                        choices: e.target.value.split(',').map(s => s.trim())
                     })}
                    />
                 </div>
               )}
-              
+
               {generatedValues[variable.name] !== undefined && (
                 <div className="mt-3 flex justify-between items-center bg-white rounded border border-gray-100 px-2 py-1">
                   <span className="text-xs text-gray-400 font-medium">Valeur générée :</span>
@@ -211,7 +325,8 @@ const VariableManager = ({ currentExercise, generatedValues, addVariable, update
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

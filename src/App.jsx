@@ -27,6 +27,8 @@ const App = () => {
   const {
     generatedValues,
     addVariable,
+    addDoublet,
+    addTriplet,
     updateVariable,
     deleteVariable,
     regenerateValues,
@@ -63,6 +65,8 @@ const App = () => {
                       currentExercise={currentExercise}
                       generatedValues={generatedValues}
                       addVariable={addVariable}
+                      addDoublet={addDoublet}
+                      addTriplet={addTriplet}
                       updateVariable={updateVariable}
                       deleteVariable={deleteVariable}
                     />

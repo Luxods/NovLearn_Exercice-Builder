@@ -42,6 +42,34 @@ export const useVariables = (currentExercise, setCurrentExercise) => {
     }));
   };
 
+  const addDoublet = () => {
+    setCurrentExercise(prev => ({
+      ...prev,
+      variables: [...(prev.variableDefinitions || prev.variables || []), {
+        id: Date.now(),
+        type: 'doublet',
+        mode: 'choice',
+        names: ['a', 'b'],
+        choices: ''
+      }]
+    }));
+  };
+
+  const addTriplet = () => {
+    setCurrentExercise(prev => ({
+      ...prev,
+      variables: [...(prev.variableDefinitions || prev.variables || []), {
+        id: Date.now(),
+        type: 'triplet',
+        mode: 'perfect_square',
+        names: ['A', 'B', 'C'],
+        min: -4,
+        max: 4,
+        exclusions: '0'
+      }]
+    }));
+  };
+
   // --- Logique de génération ---
   const varsList = currentExercise.variableDefinitions || currentExercise.variables || [];
   
@@ -64,6 +92,8 @@ export const useVariables = (currentExercise, setCurrentExercise) => {
   return {
     generatedValues,
     addVariable,
+    addDoublet,
+    addTriplet,
     updateVariable,
     deleteVariable,
     regenerateValues

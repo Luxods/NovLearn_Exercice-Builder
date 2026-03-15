@@ -3,9 +3,33 @@ import { mathModules } from './mathmodules'; // IMPORT DU MODULE
 export const generateRandomValues = (variables) => {
   const scope = {};
 
-  // 1. Variables Aléatoires (Rien ne change ici)
-  const randomVars = variables.filter(v => v.type !== 'computed');
-  
+  // Helper : parse les exclusions (ex: "0; -1")
+  const parseExclusions = (excl) => {
+    if (!excl) return [];
+    return String(excl).split(/[;,]/).map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+  };
+
+  // Helper : entier aléatoire dans [min, max] avec exclusions
+  const randomInt = (min, max, excluded = [], maxAttempts = 50) => {
+    let val, attempts = 0;
+    do {
+      val = Math.floor(Math.random() * (max - min + 1)) + min;
+      attempts++;
+    } while (excluded.some(ex => ex === val) && attempts < maxAttempts);
+    return val;
+  };
+
+  // Helper : parse "(1,2); (-1,3)" en tableau de tableaux
+  const parseMultiChoices = (str, count) => {
+    if (!str) return [];
+    return str.split(';')
+      .map(s => s.trim().replace(/[()]/g, '').split(',').map(Number))
+      .filter(arr => arr.length === count && arr.every(n => !isNaN(n)));
+  };
+
+  // 1. Variables Aléatoires (scalaires)
+  const randomVars = variables.filter(v => !['computed', 'doublet', 'triplet'].includes(v.type));
+
   randomVars.forEach(v => {
     if (!v.name) return;
 
@@ -52,6 +76,33 @@ export const generateRandomValues = (variables) => {
       }
     }
     scope[v.name] = isValid ? val : (v.min ?? 0);
+  });
+
+  // 1b. Doublets et Triplets
+  const multiVars = variables.filter(v => ['doublet', 'triplet'].includes(v.type));
+
+  multiVars.forEach(v => {
+    if (!v.names || v.names.length === 0) return;
+
+    if (v.mode === 'choice') {
+      const count = v.type === 'doublet' ? 2 : 3;
+      const options = parseMultiChoices(v.choices || '', count);
+      if (!options.length) return;
+      const picked = options[Math.floor(Math.random() * options.length)];
+      v.names.forEach((name, i) => { if (name && name.trim()) scope[name.trim()] = picked[i]; });
+    }
+
+    if (v.mode === 'perfect_square') {
+      const excluded = parseExclusions(v.exclusions);
+      const min = v.min ?? -4;
+      const max = v.max ?? 4;
+      const p = randomInt(min, max, excluded);
+      const q = randomInt(min, max, excluded);
+      const [nA, nB, nC] = v.names;
+      if (nA && nA.trim()) scope[nA.trim()] = p * p;
+      if (nB && nB.trim()) scope[nB.trim()] = 2 * p * q;
+      if (nC && nC.trim()) scope[nC.trim()] = q * q;
+    }
   });
 
   // 2. Variables CALCULÉES (AVEC LES MODULES)
