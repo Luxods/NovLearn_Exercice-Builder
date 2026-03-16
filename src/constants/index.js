@@ -66,6 +66,11 @@ export const getCompetencesByChapter = async (chapter) => {
   return competencesByChapter[chapter] ?? [];
 };
 
+export const getCompetencesByChapterMap = async () => {
+  const { competencesByChapter } = await getTaxonomy();
+  return competencesByChapter;
+};
+
 export const getAllCompetences = async () => {
   const { allCompetences } = await getTaxonomy();
   return allCompetences;

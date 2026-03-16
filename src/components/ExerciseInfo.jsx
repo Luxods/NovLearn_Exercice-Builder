@@ -1,35 +1,45 @@
 ﻿// src/components/ExerciseInfo.jsx
-import React, { useState, useEffect } from 'react';
-import { getChapters, getCompetencesByChapter, difficulties } from '../constants';
-import { ChevronDown, ChevronRight, Check, X, Zap, Calculator } from 'lucide-react';
+import {
+  Calculator,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  X,
+  Zap,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  difficulties,
+  getChapters,
+  getCompetencesByChapterMap,
+} from "../constants";
 
 const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
   const [showCompetences, setShowCompetences] = useState(false);
   const [chaptersList, setChaptersList] = useState([]);
-  const [availableCompetences, setAvailableCompetences] = useState([]);
+  const [competencesByChapter, setCompetencesByChapter] = useState({});
+  const [expandedChapters, setExpandedChapters] = useState({});
 
   // Chargement initial de la liste des chapitres
   useEffect(() => {
     getChapters().then(setChaptersList).catch(console.error);
-  }, []);
-
-  // Rechargement des compétences quand le chapitre change
-  useEffect(() => {
-    if (currentExercise.chapter) {
-      getCompetencesByChapter(currentExercise.chapter)
-        .then(setAvailableCompetences)
-        .catch(console.error);
-    } else {
-      setAvailableCompetences([]);
-    }
+    getCompetencesByChapterMap()
+      .then(setCompetencesByChapter)
+      .catch(console.error);
   }, [currentExercise.chapter]);
 
   const toggleCompetence = (competence) => {
     const currentCompetences = currentExercise.competences || [];
     if (currentCompetences.includes(competence)) {
-      setCurrentExercise({ ...currentExercise, competences: currentCompetences.filter(c => c !== competence) });
+      setCurrentExercise({
+        ...currentExercise,
+        competences: currentCompetences.filter((c) => c !== competence),
+      });
     } else {
-      setCurrentExercise({ ...currentExercise, competences: [...currentCompetences, competence] });
+      setCurrentExercise({
+        ...currentExercise,
+        competences: [...currentCompetences, competence],
+      });
     }
   };
 
@@ -41,14 +51,51 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
     setCurrentExercise({
       ...currentExercise,
       chapter: newChapter,
-      competences: []
     });
+  };
+
+  const orderedChapters = chaptersList.filter((chapter) => {
+    const chapterCompetences = competencesByChapter[chapter] || [];
+    return chapterCompetences.length > 0;
+  });
+
+  if (
+    currentExercise.chapter &&
+    orderedChapters.includes(currentExercise.chapter)
+  ) {
+    orderedChapters.splice(orderedChapters.indexOf(currentExercise.chapter), 1);
+    orderedChapters.unshift(currentExercise.chapter);
+  }
+
+  useEffect(() => {
+    if (orderedChapters.length === 0) return;
+
+    setExpandedChapters((prev) => {
+      const next = {};
+      for (const chapter of orderedChapters) {
+        if (Object.prototype.hasOwnProperty.call(prev, chapter)) {
+          next[chapter] = prev[chapter];
+        } else {
+          next[chapter] = chapter === currentExercise.chapter;
+        }
+      }
+      return next;
+    });
+  }, [orderedChapters, currentExercise.chapter]);
+
+  const toggleChapterExpansion = (chapter) => {
+    setExpandedChapters((prev) => ({
+      ...prev,
+      [chapter]: !prev[chapter],
+    }));
   };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-800 border-b pb-2">📋 Informations Générales</h2>
-      
+      <h2 className="text-xl font-bold text-gray-800 border-b pb-2">
+        📋 Informations Générales
+      </h2>
+
       {/* DOUBLE INPUT POUR LES TITRES */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Nom Développeur (Interne) */}
@@ -60,7 +107,9 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
             type="text"
             className="w-full p-2 border border-gray-300 rounded focus:border-blue-500 outline-none text-sm"
             value={currentExercise.title}
-            onChange={(e) => setCurrentExercise({...currentExercise, title: e.target.value})}
+            onChange={(e) =>
+              setCurrentExercise({ ...currentExercise, title: e.target.value })
+            }
             placeholder="Ex: Logarithme_Bac"
           />
         </div>
@@ -73,11 +122,18 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
           <input
             type="text"
             className="w-full p-2 border border-blue-200 rounded focus:border-blue-500 outline-none text-sm"
-            value={currentExercise.appTitle || ''}
-            onChange={(e) => setCurrentExercise({...currentExercise, appTitle: e.target.value})}
+            value={currentExercise.appTitle || ""}
+            onChange={(e) =>
+              setCurrentExercise({
+                ...currentExercise,
+                appTitle: e.target.value,
+              })
+            }
             placeholder="Ex: Étude de fonction logarithme"
           />
-          <p className="text-[10px] text-blue-400 mt-1">C'est ce titre que l'élève verra en haut de la page</p>
+          <p className="text-[10px] text-blue-400 mt-1">
+            C'est ce titre que l'élève verra en haut de la page
+          </p>
         </div>
       </div>
 
@@ -85,14 +141,22 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
       <div className="flex gap-3">
         <button
           type="button"
-          onClick={() => setCurrentExercise({ ...currentExercise, Is_Flash: !currentExercise.Is_Flash })}
+          onClick={() =>
+            setCurrentExercise({
+              ...currentExercise,
+              Is_Flash: !currentExercise.Is_Flash,
+            })
+          }
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 text-sm font-bold transition-all shadow-sm ${
             currentExercise.Is_Flash
-              ? 'bg-yellow-400 border-yellow-500 text-yellow-900 shadow-yellow-200'
-              : 'bg-white border-dashed border-gray-300 text-gray-400 line-through'
+              ? "bg-yellow-400 border-yellow-500 text-yellow-900 shadow-yellow-200"
+              : "bg-white border-dashed border-gray-300 text-gray-400 line-through"
           }`}
         >
-          <Zap size={16} className={currentExercise.Is_Flash ? 'fill-yellow-700' : ''} />
+          <Zap
+            size={16}
+            className={currentExercise.Is_Flash ? "fill-yellow-700" : ""}
+          />
           Flash Exos
           {currentExercise.Is_Flash ? (
             <Check size={14} className="ml-1 text-yellow-700" />
@@ -103,11 +167,16 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
 
         <button
           type="button"
-          onClick={() => setCurrentExercise({ ...currentExercise, Need_Calculator: !currentExercise.Need_Calculator })}
+          onClick={() =>
+            setCurrentExercise({
+              ...currentExercise,
+              Need_Calculator: !currentExercise.Need_Calculator,
+            })
+          }
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 text-sm font-bold transition-all shadow-sm ${
             currentExercise.Need_Calculator
-              ? 'bg-green-400 border-green-500 text-green-900 shadow-green-200'
-              : 'bg-white border-dashed border-gray-300 text-gray-400 line-through'
+              ? "bg-green-400 border-green-500 text-green-900 shadow-green-200"
+              : "bg-white border-dashed border-gray-300 text-gray-400 line-through"
           }`}
         >
           <Calculator size={16} />
@@ -129,7 +198,9 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
             value={currentExercise.chapter}
             onChange={(e) => handleChapterChange(e.target.value)}
           >
-            {chaptersList.map(ch => <option key={ch}>{ch}</option>)}
+            {chaptersList.map((ch) => (
+              <option key={ch}>{ch}</option>
+            ))}
           </select>
         </div>
 
@@ -138,14 +209,21 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
           <select
             className="w-full p-2 border-2 border-gray-300 rounded-lg"
             value={currentExercise.difficulty}
-            onChange={(e) => setCurrentExercise({...currentExercise, difficulty: e.target.value})}
+            onChange={(e) =>
+              setCurrentExercise({
+                ...currentExercise,
+                difficulty: e.target.value,
+              })
+            }
           >
-            {difficulties.map(d => <option key={d}>{d}</option>)}
+            {difficulties.map((d) => (
+              <option key={d}>{d}</option>
+            ))}
           </select>
         </div>
       </div>
 
-      {/* Compétences (Inchangé) */}
+      {/* Compétences */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label className="block text-sm font-medium">
@@ -156,70 +234,108 @@ const ExerciseInfo = ({ currentExercise, setCurrentExercise }) => {
             onClick={() => setShowCompetences(!showCompetences)}
             className="p-1 hover:bg-gray-100 rounded"
           >
-            {showCompetences ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            {showCompetences ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
           </button>
         </div>
 
         {/* Compétences sélectionnées */}
-        {currentExercise.competences && currentExercise.competences.length > 0 && (
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-blue-700">
-                Compétences sélectionnées:
-              </span>
-              <button
-                onClick={clearCompetences}
-                className="text-xs text-red-500 hover:text-red-700"
-              >
-                Tout effacer
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {currentExercise.competences.map((comp, idx) => (
-                <span
-                  key={idx}
-                  className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs flex items-center gap-1"
-                >
-                  {comp}
-                  <button
-                    onClick={() => toggleCompetence(comp)}
-                    className="hover:text-blue-900"
-                  >
-                    <X size={12} />
-                  </button>
+        {currentExercise.competences &&
+          currentExercise.competences.length > 0 && (
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-blue-700">
+                  Compétences sélectionnées:
                 </span>
-              ))}
+                <button
+                  onClick={clearCompetences}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  Tout effacer
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {currentExercise.competences.map((comp, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs flex items-center gap-1"
+                  >
+                    {comp}
+                    <button
+                      onClick={() => toggleCompetence(comp)}
+                      className="hover:text-blue-900"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Liste des compétences disponibles */}
         {showCompetences && (
           <div className="border-2 border-gray-200 rounded-lg p-2 max-h-60 overflow-y-auto">
-            {availableCompetences.length === 0 ? (
+            {orderedChapters.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-2">
                 Sélectionnez un chapitre pour voir les compétences
               </p>
             ) : (
-              <div className="space-y-1">
-                {availableCompetences.map((competence, idx) => {
-                  const isSelected = currentExercise.competences?.includes(competence);
-                  
+              <div className="space-y-3">
+                {orderedChapters.map((chapter) => {
+                  const chapterCompetences =
+                    competencesByChapter[chapter] || [];
+                  const isCurrentChapter = chapter === currentExercise.chapter;
+                  const isExpanded = expandedChapters[chapter] ?? false;
+
                   return (
-                    <label
-                      key={idx}
-                      className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
-                        isSelected ? 'bg-blue-50' : ''
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleCompetence(competence)}
-                        className="rounded"
-                      />
-                      <span className="text-sm">{competence}</span>
-                    </label>
+                    <div key={chapter} className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleChapterExpansion(chapter)}
+                        className={`w-full flex items-center justify-between text-xs font-semibold px-2 pt-1 pb-1 rounded ${
+                          isCurrentChapter
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        <span>
+                          {chapter}
+                          {isCurrentChapter ? " (chapitre sélectionné)" : ""}
+                        </span>
+                        {isExpanded ? (
+                          <ChevronDown size={14} />
+                        ) : (
+                          <ChevronRight size={14} />
+                        )}
+                      </button>
+
+                      {isExpanded &&
+                        chapterCompetences.map((competence) => {
+                          const isSelected =
+                            currentExercise.competences?.includes(competence);
+
+                          return (
+                            <label
+                              key={`${chapter}-${competence}`}
+                              className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
+                                isSelected ? "bg-blue-50" : ""
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleCompetence(competence)}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{competence}</span>
+                            </label>
+                          );
+                        })}
+                    </div>
                   );
                 })}
               </div>
