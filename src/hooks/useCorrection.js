@@ -54,14 +54,41 @@ export const useCorrection = (exercise, generatedValues) => {
   // Corriger un intervalle
   const correctIntervalAnswer = (userInterval, expectedMin, expectedMax, tolerance = 0.01) => {
     if (!userInterval || !userInterval.min || !userInterval.max) return false;
-    
+
     const userMin = parseFloat(userInterval.min);
     const userMax = parseFloat(userInterval.max);
     const expMin = parseFloat(evaluateExpression(expectedMin, generatedValues));
     const expMax = parseFloat(evaluateExpression(expectedMax, generatedValues));
-    
-    return Math.abs(userMin - expMin) <= tolerance && 
+
+    return Math.abs(userMin - expMin) <= tolerance &&
            Math.abs(userMax - expMax) <= tolerance;
+  };
+
+  // Corriger un ensemble (set)
+  const correctSetAnswer = (userAnswer, expectedAnswer) => {
+    const normalizeSet = (str) => {
+      if (!str) return [];
+      // Supprimer les délimiteurs LaTeX $$ et les espaces
+      let cleaned = str
+        .replace(/\$\$/g, '')  // Supprimer $$..$$
+        .replace(/^\s*\{\s*/, '') // Supprimer { au début
+        .replace(/\s*\}\s*$/, '') // Supprimer } à la fin
+        .replace(/\s/g, '')  // Supprimer tous les espaces
+        .trim();
+
+      // Diviser par ; et évaluer chaque élément
+      return cleaned
+        .split(';')
+        .map(item => evaluateExpression(item, generatedValues).trim())
+        .filter(item => item.length > 0)
+        .sort();
+    };
+
+    const userSet = normalizeSet(userAnswer);
+    const expectedSet = normalizeSet(expectedAnswer);
+
+    if (userSet.length !== expectedSet.length) return false;
+    return userSet.every((item, idx) => item === expectedSet[idx]);
   };
 
   // Corriger tout l'exercice
@@ -78,34 +105,34 @@ export const useCorrection = (exercise, generatedValues) => {
         totalPoints += points;
 
         const userAnswer = userAnswers[element.id];
-        const expectedAnswer = element.content.answer;
+        const expectedAnswer = element.content.correctAnswer;
         let isCorrect = false;
         let feedback = '';
 
-        switch (element.content.answerType) {
-          case 'numeric':
+        switch (element.content.answerFormat) {
+          case 'number':
             isCorrect = correctNumericAnswer(
-              userAnswer, 
-              expectedAnswer, 
+              userAnswer,
+              expectedAnswer,
               element.content.tolerance
             );
-            feedback = isCorrect ? 
-              '✅ Correct !' : 
+            feedback = isCorrect ?
+              '✅ Correct !' :
               `❌ Incorrect. La réponse attendue était ${evaluateExpression(expectedAnswer, generatedValues)}`;
             break;
 
           case 'expression':
             isCorrect = correctExpressionAnswer(userAnswer, expectedAnswer);
-            feedback = isCorrect ? 
-              '✅ Correct !' : 
+            feedback = isCorrect ?
+              '✅ Correct !' :
               `❌ Incorrect. La réponse attendue était ${evaluateExpression(expectedAnswer, generatedValues)}`;
             break;
 
           case 'text':
-            isCorrect = userAnswer?.toLowerCase().trim() === 
+            isCorrect = userAnswer?.toLowerCase().trim() ===
                        expectedAnswer?.toLowerCase().trim();
-            feedback = isCorrect ? 
-              '✅ Correct !' : 
+            feedback = isCorrect ?
+              '✅ Correct !' :
               `❌ Incorrect. La réponse attendue était "${expectedAnswer}"`;
             break;
 
@@ -116,20 +143,16 @@ export const useCorrection = (exercise, generatedValues) => {
               element.content.upperBound,
               element.content.tolerance
             );
-            feedback = isCorrect ? 
-              '✅ Correct !' : 
+            feedback = isCorrect ?
+              '✅ Correct !' :
               `❌ Incorrect. L'intervalle attendu était [${evaluateExpression(element.content.lowerBound, generatedValues)}, ${evaluateExpression(element.content.upperBound, generatedValues)}]`;
             break;
 
-          case 'multiple':
-            // Pour les réponses multiples
-            const answers = userAnswer ? userAnswer.split(',').map(a => a.trim()) : [];
-            const expected = expectedAnswer.split(',').map(a => a.trim());
-            isCorrect = answers.length === expected.length &&
-                       answers.every(a => expected.includes(a));
-            feedback = isCorrect ? 
-              '✅ Correct !' : 
-              `❌ Incorrect. Les réponses attendues étaient : ${expected.join(', ')}`;
+          case 'set':
+            isCorrect = correctSetAnswer(userAnswer, expectedAnswer);
+            feedback = isCorrect ?
+              '✅ Correct !' :
+              `❌ Incorrect. L'ensemble attendu était { ${evaluateExpression(expectedAnswer, generatedValues)} }`;
             break;
 
           default:
