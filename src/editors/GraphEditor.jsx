@@ -1,4 +1,5 @@
 import React from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 const GraphEditor = ({ content, onUpdate }) => {
   const safeContent = content || {
@@ -87,7 +88,14 @@ const GraphEditor = ({ content, onUpdate }) => {
                 placeholder="@a x^2 + @b"
               />
             </div>
-            <button 
+            <button
+              title={fn.showExpression === false ? "Afficher l'expression" : "Masquer l'expression"}
+              onClick={() => handleFunctionChange(idx, 'showExpression', fn.showExpression === false ? true : false)}
+              className={`p-2 rounded ${fn.showExpression === false ? 'text-gray-400 hover:bg-gray-50' : 'text-blue-500 hover:bg-blue-50'}`}
+            >
+              {fn.showExpression === false ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+            <button
               onClick={() => removeFunction(idx)}
               className="text-red-500 hover:bg-red-50 p-2 rounded"
             >

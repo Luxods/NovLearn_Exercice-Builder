@@ -132,14 +132,25 @@ const GraphRenderer = ({ content, variables }) => {
     
   }, [content, variables, width, height, xMin, xMax, yMin, yMax]);
 
+  const visibleLabels = (content.functions || []).filter(fn => fn.expression && fn.showExpression !== false);
+
   return (
-    <div className="flex justify-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
-      <canvas 
-        ref={canvasRef} 
-        width={width} 
-        height={height} 
+    <div className="flex flex-col items-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm gap-2">
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
         className="border border-gray-200 rounded bg-white"
       />
+      {visibleLabels.length > 0 && (
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-mono">
+          {visibleLabels.map((fn, idx) => (
+            <span key={idx} style={{ color: fn.color || '#2563eb' }}>
+              f(x) = {fn.expression}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
