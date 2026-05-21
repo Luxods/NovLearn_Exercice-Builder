@@ -8,11 +8,11 @@ export const defaultContent = {
   },
 
   graph: {
-    functions: [{ expression: "x^2", color: "#2563eb" }],
+    functions: [{ expression: "x^2", color: "#2563eb", showExpression: true }],
     xMin: -5,
     xMax: 5,
-    yMin: -5,
-    yMax: 5,
+    yMin: "auto",
+    yMax: "auto",
     showGrid: true,
   },
 

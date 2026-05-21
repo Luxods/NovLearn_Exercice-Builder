@@ -1,15 +1,55 @@
 import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
+const isAuto = (v) =>
+  v === 'auto' || v === null || v === undefined ||
+  (typeof v === 'string' && v.trim().toLowerCase() === 'auto');
+
+// Affiche un champ libre (nombre ou expression "@a-1") + checkbox "auto"
+const BoundField = ({ label, value, onChange }) => {
+  const auto = isAuto(value);
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <label className="text-sm">{label}</label>
+        <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={auto}
+            onChange={(e) => onChange(e.target.checked ? 'auto' : 0)}
+          />
+          auto
+        </label>
+      </div>
+      <input
+        type="text"
+        className="w-full p-1 border rounded text-sm font-mono disabled:bg-gray-100 disabled:text-gray-400"
+        value={auto ? '' : String(value ?? '')}
+        placeholder={auto ? 'auto' : '-5 ou @a-1'}
+        disabled={auto}
+        onChange={(e) => {
+          const raw = e.target.value;
+          if (raw.trim() === '') { onChange(0); return; }
+          // Si purement numérique, on stocke en number ; sinon on garde la string (expression)
+          const num = Number(raw);
+          onChange(!Number.isNaN(num) && /^-?\d*\.?\d+$/.test(raw.trim()) ? num : raw);
+        }}
+      />
+    </div>
+  );
+};
+
 const GraphEditor = ({ content, onUpdate }) => {
   const safeContent = content || {
     functions: [{ expression: 'x^2', color: '#2563eb' }],
     xMin: -5,
     xMax: 5,
-    yMin: -5,
-    yMax: 5,
-    showGrid: true
+    yMin: 'auto',
+    yMax: 'auto',
+    showGrid: true,
   };
+
+  const setBound = (key) => (val) => onUpdate({ ...safeContent, [key]: val });
 
   const handleFunctionChange = (index, field, value) => {
     const newFunctions = [...safeContent.functions];
@@ -31,40 +71,27 @@ const GraphEditor = ({ content, onUpdate }) => {
 
   return (
     <div className="space-y-4">
-      {/* Paramètres de la fenêtre */}
-      <div className="grid grid-cols-4 gap-2 text-sm">
-        <div>
-          <label>X Min</label>
-          <input 
-            type="number" className="w-full p-1 border rounded"
-            value={safeContent.xMin} 
-            onChange={e => onUpdate({...safeContent, xMin: Number(e.target.value)})} 
-          />
-        </div>
-        <div>
-          <label>X Max</label>
-          <input 
-            type="number" className="w-full p-1 border rounded"
-            value={safeContent.xMax} 
-            onChange={e => onUpdate({...safeContent, xMax: Number(e.target.value)})} 
-          />
-        </div>
-        <div>
-          <label>Y Min</label>
-          <input 
-            type="number" className="w-full p-1 border rounded"
-            value={safeContent.yMin} 
-            onChange={e => onUpdate({...safeContent, yMin: Number(e.target.value)})} 
-          />
-        </div>
-        <div>
-          <label>Y Max</label>
-          <input 
-            type="number" className="w-full p-1 border rounded"
-            value={safeContent.yMax} 
-            onChange={e => onUpdate({...safeContent, yMax: Number(e.target.value)})} 
-          />
-        </div>
+      {/* Bornes de la fenêtre */}
+      <div className="grid grid-cols-4 gap-3">
+        <BoundField label="X Min" value={safeContent.xMin} onChange={setBound('xMin')} />
+        <BoundField label="X Max" value={safeContent.xMax} onChange={setBound('xMax')} />
+        <BoundField label="Y Min" value={safeContent.yMin} onChange={setBound('yMin')} />
+        <BoundField label="Y Max" value={safeContent.yMax} onChange={setBound('yMax')} />
+      </div>
+      <p className="text-xs text-gray-500 -mt-2">
+        Astuce&nbsp;: pour des fonctions à croissance forte (log, exp, racine…), cocher <em>auto</em> sur Y Min/Y Max.
+        Les expressions avec variables sont acceptées, ex. <code>@a-1</code> ou <code>2*@a+@b</code>.
+      </p>
+
+      {/* Options globales */}
+      <div className="flex items-center gap-2">
+        <input
+          id="showGrid"
+          type="checkbox"
+          checked={safeContent.showGrid !== false}
+          onChange={(e) => onUpdate({ ...safeContent, showGrid: e.target.checked })}
+        />
+        <label htmlFor="showGrid" className="text-sm">Afficher la grille</label>
       </div>
 
       {/* Liste des fonctions */}
@@ -103,7 +130,7 @@ const GraphEditor = ({ content, onUpdate }) => {
             </button>
           </div>
         ))}
-        <button 
+        <button
           onClick={addFunction}
           className="text-sm text-blue-600 hover:underline"
         >
